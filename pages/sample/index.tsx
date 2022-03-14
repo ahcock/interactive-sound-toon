@@ -1,10 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import {
-  ImageLayer,
-  PageContainer,
-  SoundLayer,
-} from "./samplePageIndex.styles";
+import { PageContainer } from "./samplePageIndex.styles";
+import { SoundLayer } from "../../components/soundLayer/soundLayer.component";
+import ImageLayer from "../../components/imageLayer/imageLayer.component";
 
 interface SampleImageType {
   src: string;
@@ -43,34 +40,18 @@ const Sample: FC = () => {
         setImageLayerDimension({ width, height });
       }
     },
-    [imageList, imagesContainerRef?.current?.offsetHeight]
+    [imageList]
   );
-
-  console.log(imageLayerDimension);
 
   return imageList.length === 0 ? (
     <p>Loading Images</p>
   ) : (
     <PageContainer>
-      <ImageLayer ref={imagesContainerRef}>
-        {imageList.map((image, index) => (
-          <Image
-            key={index}
-            src={image.src}
-            width={690}
-            height={1600}
-            alt="webtoon image"
-          />
-        ))}
-      </ImageLayer>
-      <SoundLayer
-        height={imageLayerDimension?.height}
-        width={imageLayerDimension?.width}
-      >
-        {}
-      </SoundLayer>
+      <ImageLayer imageList={imageList} ref={imagesContainerRef} />
+      <SoundLayer imageLayerDimension={imageLayerDimension} />
     </PageContainer>
   );
 };
 
 export default Sample;
+export type { SampleImageType };

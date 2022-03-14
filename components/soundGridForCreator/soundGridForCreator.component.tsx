@@ -2,9 +2,14 @@ import { CSSProperties, FC } from "react";
 import { GridContainer } from "./soundGridForCreator.styles";
 import { CSSObject } from "styled-components";
 
+type GridPosition = {
+  row: string;
+  column: string;
+};
+
 interface SoundGridForCreatorProps {
   showGrid?: boolean;
-  gridPosition: CSSObject;
+  gridPosition: GridPosition;
 }
 
 const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
@@ -19,3 +24,4 @@ const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
 };
 
 export { SoundGridForCreator };
+export type { GridPosition };
