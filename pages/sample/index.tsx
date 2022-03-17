@@ -17,6 +17,7 @@ interface TotalImageDimensionType {
 // {/*TODO hover시 + 사인이 뜨는 input + label 콤포넌트를 만들고, onChange event시에는, 바로 서버에 업로드가 되고, <오디오 업로드> 콤포넌트 내의  */}
 // {/*TODO statde 토글로 인해, UI를 더이상 +모양의 인풋 콤포넌트가 "아닌", 커스터마이징 된 오디오 플레이어를 보여준다(재생, 정지,볼륨 기능 탑재한) UI 오른쪽 윗쪽에  */}
 // {/*TOD 엑스버튼을 두어 그것을 누르면 서버에서 삭제가 되는 로직을 만들어야 겠다 */}
+
 const Sample: FC = () => {
   const [imageList, setImageList] = useState<SampleImageType[]>([]);
   const [imageLayerDimension, setImageLayerDimension] =
@@ -51,6 +52,12 @@ const Sample: FC = () => {
       <SoundLayer imageLayerDimension={imageLayerDimension} />
     </PageContainer>
   );
+};
+
+const getStaticProps = async () => {
+  return {
+    props: {},
+  };
 };
 
 export default Sample;

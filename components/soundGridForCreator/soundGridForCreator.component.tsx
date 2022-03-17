@@ -1,6 +1,5 @@
-import { CSSProperties, FC } from "react";
-import { GridContainer } from "./soundGridForCreator.styles";
-import { CSSObject } from "styled-components";
+import { FC } from "react";
+import { GridContainer, UploadButton } from "./soundGridForCreator.styles";
 
 type GridPosition = {
   row: string;
@@ -10,15 +9,19 @@ type GridPosition = {
 interface SoundGridForCreatorProps {
   showGrid?: boolean;
   gridPosition: GridPosition;
+  onPlusClick: (info: string) => void;
 }
 
 const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
   showGrid = false,
   gridPosition,
+  onPlusClick,
 }) => {
   return (
     <GridContainer gridPosition={gridPosition} showGrid={showGrid}>
-      test
+      <UploadButton onClick={() => onPlusClick("그리드 포지션 샘플")}>
+        +
+      </UploadButton>
     </GridContainer>
   );
 };

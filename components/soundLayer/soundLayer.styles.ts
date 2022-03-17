@@ -13,3 +13,11 @@ export const SoundLayerSection = styled.section<{
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(200, 1fr);
 `;
+
+export const StickyAudioPlayerContainer = styled.article`
+  position: sticky;
+  bottom: 0;
+  left: 50%;
+  width: max-content;
+  height: 100px;
+`;
