@@ -19,9 +19,7 @@ const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
 }) => {
   return (
     <GridContainer gridPosition={gridPosition} showGrid={showGrid}>
-      <UploadButton onClick={() => onPlusClick("그리드 포지션 샘플")}>
-        +
-      </UploadButton>
+      <UploadButton onClick={onPlusClick}>+</UploadButton>
     </GridContainer>
   );
 };
