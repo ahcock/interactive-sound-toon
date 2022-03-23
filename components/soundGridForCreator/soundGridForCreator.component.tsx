@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { GridContainer, UploadButton } from "./soundGridForCreator.styles";
+import { OnPlusClick } from "../soundLayer/soundLayer.component";
 
 type GridPosition = {
   row: string;
@@ -9,17 +10,25 @@ type GridPosition = {
 interface SoundGridForCreatorProps {
   showGrid?: boolean;
   gridPosition: GridPosition;
-  onPlusClick: (info: string) => void;
+  onPlusClick: OnPlusClick;
+  index: number;
 }
 
 const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
   showGrid = false,
   gridPosition,
   onPlusClick,
+  index,
 }) => {
   return (
     <GridContainer gridPosition={gridPosition} showGrid={showGrid}>
-      <UploadButton onClick={onPlusClick}>+</UploadButton>
+      <UploadButton
+        onClick={() => {
+          onPlusClick(index);
+        }}
+      >
+        +
+      </UploadButton>
     </GridContainer>
   );
 };

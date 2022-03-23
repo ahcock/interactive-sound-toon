@@ -5,6 +5,13 @@ import {
 } from "./soundLayer.styles";
 import { SoundGridForCreator } from "../soundGridForCreator/soundGridForCreator.component";
 
+type GridInfo = {
+  column: string;
+  row: string;
+};
+
+type OnPlusClick = (info: number) => void;
+
 interface SoundLayerProps {
   imageLayerDimension: {
     height: number;
@@ -16,24 +23,27 @@ const SoundLayer: FC<SoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
   const [soundGridItems, setSoundGridItems] = useState<
-    JSX.Element[] | undefined
+    (JSX.Element | File)[] | undefined
   >();
 
   const [fileInfo, setFileInfo] = useState<{
-    gridPosition: string;
+    gridPosition: GridInfo;
     file: File | null;
   }>({
-    gridPosition: "",
+    gridPosition: { row: "", column: "" },
     file: null,
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const clickedGridIndex = useRef<number>(0);
+
   useEffect(function registerSoundGrid() {
-    const soundGrids = [];
+    const soundGrids: JSX.Element[] = [];
     for (let i = 1; i < 201; i++) {
       for (let j = 1; j < 11; j++) {
         soundGrids.push(
           <SoundGridForCreator
+            index={soundGrids.length}
             key={`row${i}column${j}`}
             gridPosition={{ row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` }}
             showGrid
@@ -46,18 +56,38 @@ const SoundLayer: FC<SoundLayerProps> = ({
     setSoundGridItems(soundGrids);
   }, []);
 
-  const onPlusClick = (info: string) => {
-    //여기서 받아온 gridInfo를 useRef에 키벨류 값으로 저장 해 둔 후, 바로 아래 onInputChange에서 ref값을 받아와setFileInfo를 file(blob) 값과 함꼐 set 해준다
+  const onPlusClick: OnPlusClick = (info) => {
+    clickedGridIndex.current = info;
     inputRef.current?.click();
   };
 
-  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.files) {
-      setFileInfo({ gridPosition: "", file: event.currentTarget.files[0] });
+  // TODO: input으로부터 받은 파일을 어떻게 soundGridItems배열에 대체 시킬 것인가?
+
+  const onSoundUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.currentTarget.files && soundGridItems) {
+      // setFileInfo({
+      //   gridPosition: clickedGridInfo.current,
+      //   file: event.currentTarget.files[0],
+      // });
+
+      const audioUrl = URL.createObjectURL(event.currentTarget.files[0]);
+
+      const audioElement = (
+        <audio src={audioUrl}>
+          Your browser does not support the
+          <code>audio</code> element.
+        </audio>
+      );
+
+      const clickedItem = soundGridItems[clickedGridIndex.current];
+
+      const newItems = [...soundGridItems];
+      newItems[clickedGridIndex.current] = audioElement;
+
+      soundGridItems[clickedGridIndex.current] = audioElement;
+      setSoundGridItems(newItems);
     }
   };
-
-  console.log(fileInfo);
 
   return (
     <SoundLayerSection height={height} width={width} show>
@@ -68,7 +98,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
             ref={inputRef}
             type="file"
             accept="*"
-            onChange={onInputChange}
+            onChange={onSoundUpload}
             hidden
           />
         </form>
@@ -79,3 +109,4 @@ const SoundLayer: FC<SoundLayerProps> = ({
 };
 
 export { SoundLayer };
+export type { OnPlusClick };
