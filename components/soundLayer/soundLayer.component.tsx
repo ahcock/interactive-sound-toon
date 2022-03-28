@@ -4,6 +4,7 @@ import {
   StickyAudioPlayerContainer,
 } from "./soundLayer.styles";
 import { SoundGridForCreator } from "../soundGridForCreator/soundGridForCreator.component";
+import { FileUploadModal } from "../fileUploadModal/fileUploadModal.component";
 
 type GridInfo = {
   column: string;
@@ -26,13 +27,15 @@ const SoundLayer: FC<SoundLayerProps> = ({
     (JSX.Element | File)[] | undefined
   >();
 
-  const [fileInfo, setFileInfo] = useState<{
-    gridPosition: GridInfo;
-    file: File | null;
-  }>({
-    gridPosition: { row: "", column: "" },
-    file: null,
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // const [fileInfo, setFileInfo] = useState<{
+  //   gridPosition: GridInfo;
+  //   file: File | null;
+  // }>({
+  //   gridPosition: { row: "", column: "" },
+  //   file: null,
+  // });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const clickedGridIndex = useRef<number>(0);
@@ -58,7 +61,8 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
   const onPlusClick: OnPlusClick = (info) => {
     clickedGridIndex.current = info;
-    inputRef.current?.click();
+    setIsModalOpen(true);
+    // inputRef.current?.click();
   };
 
   // TODO: input으로부터 받은 파일을 어떻게 soundGridItems배열에 대체 시킬 것인가?
@@ -73,7 +77,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
       const audioUrl = URL.createObjectURL(event.currentTarget.files[0]);
 
       const audioElement = (
-        <audio src={audioUrl}>
+        <audio src={audioUrl} key={audioUrl} controls>
           Your browser does not support the
           <code>audio</code> element.
         </audio>
@@ -104,6 +108,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
         </form>
       </StickyAudioPlayerContainer>
       {soundGridItems}
+      {isModalOpen && <FileUploadModal setIsOpen={setIsModalOpen} />}
     </SoundLayerSection>
   );
 };
