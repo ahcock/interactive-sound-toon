@@ -45,21 +45,34 @@ export const Subtitle = styled.h4`
 
 export const FileUploaderLabel = styled.label`
   margin-top: 10px;
-  padding-left: 10px;
+  padding: 0 15px;
   width: 100%;
   height: 40px;
   background-color: rgb(246, 245, 250);
   border: 1px solid rgb(213, 212, 218);
   border-radius: 5px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
   cursor: pointer;
   position: relative;
-
-  &:after {
-    content: "";
-    position: absolute;
-    background: url("/images/svg/upload.svg") no-repeat;
-    right: 0;
+  &:hover {
+    background-color: rgb(240, 235, 240);
   }
+`;
+
+export const ButtonContainer = styled.div`
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+`;
+
+export const FileUploaderButton = styled.button`
+  border-radius: 12px;
+  width: 110px;
+  height: 40px;
+  background-color: rgba(69, 206, 133, 0.9);
+  color: rgb(117, 117, 117);
+  font-weight: 500;
 `;

@@ -11,7 +11,12 @@ type GridInfo = {
   row: string;
 };
 
-type OnPlusClick = (info: number) => void;
+type OnPlusClick = (gridInfo: GridInfo, index: number) => void;
+
+type ModalStatus = {
+  isModalOpen: boolean;
+  modalOpenedGridPosition: GridInfo;
+};
 
 interface SoundLayerProps {
   imageLayerDimension: {
@@ -27,7 +32,15 @@ const SoundLayer: FC<SoundLayerProps> = ({
     (JSX.Element | File)[] | undefined
   >();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalStatus, setModalStatus] = useState<ModalStatus>({
+    isModalOpen: false,
+    modalOpenedGridPosition: {
+      column: "",
+      row: "",
+    },
+  });
+
+  console.log(modalStatus);
 
   // const [fileInfo, setFileInfo] = useState<{
   //   gridPosition: GridInfo;
@@ -59,9 +72,9 @@ const SoundLayer: FC<SoundLayerProps> = ({
     setSoundGridItems(soundGrids);
   }, []);
 
-  const onPlusClick: OnPlusClick = (info) => {
-    clickedGridIndex.current = info;
-    setIsModalOpen(true);
+  const onPlusClick: OnPlusClick = (gridInfo, index) => {
+    clickedGridIndex.current = index;
+    setModalStatus({ modalOpenedGridPosition: gridInfo, isModalOpen: true });
     // inputRef.current?.click();
   };
 
@@ -108,10 +121,15 @@ const SoundLayer: FC<SoundLayerProps> = ({
         </form>
       </StickyAudioPlayerContainer>
       {soundGridItems}
-      {isModalOpen && <FileUploadModal setIsOpen={setIsModalOpen} />}
+      {modalStatus.isModalOpen && (
+        <FileUploadModal
+          setModalStatus={setModalStatus}
+          modalStatus={modalStatus}
+        />
+      )}
     </SoundLayerSection>
   );
 };
 
 export { SoundLayer };
-export type { OnPlusClick };
+export type { OnPlusClick, ModalStatus };
