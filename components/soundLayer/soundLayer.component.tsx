@@ -12,6 +12,7 @@ type GridInfo = {
 };
 
 type OnPlusClick = (gridInfo: GridInfo, index: number) => void;
+type OnSoundUpload = (title: string, file: File) => void;
 
 type ModalStatus = {
   isModalOpen: boolean;
@@ -39,8 +40,6 @@ const SoundLayer: FC<SoundLayerProps> = ({
       row: "",
     },
   });
-
-  console.log(modalStatus);
 
   // const [fileInfo, setFileInfo] = useState<{
   //   gridPosition: GridInfo;
@@ -80,51 +79,52 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
   // TODO: input으로부터 받은 파일을 어떻게 soundGridItems배열에 대체 시킬 것인가?
 
-  const onSoundUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.files && soundGridItems) {
-      // setFileInfo({
-      //   gridPosition: clickedGridInfo.current,
-      //   file: event.currentTarget.files[0],
-      // });
+  const onSoundUpload: OnSoundUpload = (title, file) => {
+    console.log(title, file);
 
-      const audioUrl = URL.createObjectURL(event.currentTarget.files[0]);
+    const audioUrl = URL.createObjectURL(file);
 
-      const audioElement = (
-        <audio src={audioUrl} key={audioUrl} controls>
-          Your browser does not support the
-          <code>audio</code> element.
-        </audio>
-      );
+    const audioElement = (
+      <audio src={audioUrl} key={audioUrl} controls>
+        Your browser does not support the
+        <code>audio</code> element.
+      </audio>
+    );
 
-      const clickedItem = soundGridItems[clickedGridIndex.current];
-
-      const newItems = [...soundGridItems];
-      newItems[clickedGridIndex.current] = audioElement;
-
-      soundGridItems[clickedGridIndex.current] = audioElement;
-      setSoundGridItems(newItems);
-    }
+    // if (event.currentTarget.files && soundGridItems) {
+    //   // setFileInfo({
+    //   //   gridPosition: clickedGridInfo.current,
+    //   //   file: event.currentTarget.files[0],
+    //   // });
+    //
+    //   const audioUrl = URL.createObjectURL(event.currentTarget.files[0]);
+    //
+    //   const audioElement = (
+    //     <audio src={audioUrl} key={audioUrl} controls>
+    //       Your browser does not support the
+    //       <code>audio</code> element.
+    //     </audio>
+    //   );
+    //
+    //   const clickedItem = soundGridItems[clickedGridIndex.current];
+    //
+    //   const newItems = [...soundGridItems];
+    //   newItems[clickedGridIndex.current] = audioElement;
+    //
+    //   soundGridItems[clickedGridIndex.current] = audioElement;
+    //   setSoundGridItems(newItems);
+    // }
   };
 
   return (
     <SoundLayerSection height={height} width={width} show>
-      <StickyAudioPlayerContainer>
-        <form>
-          <input
-            id="audio_uploader"
-            ref={inputRef}
-            type="file"
-            accept="*"
-            onChange={onSoundUpload}
-            hidden
-          />
-        </form>
-      </StickyAudioPlayerContainer>
+      <StickyAudioPlayerContainer></StickyAudioPlayerContainer>
       {soundGridItems}
       {modalStatus.isModalOpen && (
         <FileUploadModal
           setModalStatus={setModalStatus}
           modalStatus={modalStatus}
+          onSoundUpload={onSoundUpload}
         />
       )}
     </SoundLayerSection>
@@ -132,4 +132,4 @@ const SoundLayer: FC<SoundLayerProps> = ({
 };
 
 export { SoundLayer };
-export type { OnPlusClick, ModalStatus };
+export type { OnPlusClick, OnSoundUpload, ModalStatus };

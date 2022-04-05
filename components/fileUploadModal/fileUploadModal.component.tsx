@@ -11,29 +11,30 @@ import {
   Subtitle,
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
-import { ModalStatus } from "../soundLayer/soundLayer.component";
+import { ModalStatus, OnSoundUpload } from "../soundLayer/soundLayer.component";
 
 interface FileUploadModalComponentProps {
   setModalStatus: Dispatch<SetStateAction<ModalStatus>>;
   modalStatus: ModalStatus;
+  onSoundUpload: OnSoundUpload;
 }
 
 const FileUploadModal: FC<FileUploadModalComponentProps> = ({
   setModalStatus,
   modalStatus,
+  onSoundUpload,
 }) => {
   const [inputValue, setInputValue] = useState<{
     soundTitle: string;
-    soundFile: Blob | null;
+    soundFile: File | null;
   }>({
     soundTitle: "",
     soundFile: null,
   });
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.currentTarget;
-
-    setInputValue({ ...inputValue, [name]: value });
+    const { name, value, files } = event.target;
+    setInputValue({ ...inputValue, [name]: !!files ? files[0] : value });
   };
 
   return (
@@ -43,7 +44,8 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
         <ModalInputForm
           onSubmit={(e) => {
             e.preventDefault();
-            console.log(inputValue);
+            const { soundTitle, soundFile } = e.currentTarget;
+            onSoundUpload(soundTitle.value, soundFile.value);
           }}
         >
           <SoundNameInput
@@ -67,7 +69,7 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
             onChange={onChangeHandler}
           />
           <FileUploaderLabel htmlFor="file-uploader">
-            <p>안녕하세요</p>
+            <p>{inputValue.soundFile?.name}</p>
             <UploadIcon width={24} height={24} fill="grey" />
           </FileUploaderLabel>
 
