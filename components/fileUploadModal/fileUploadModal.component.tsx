@@ -45,7 +45,8 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
           onSubmit={(e) => {
             e.preventDefault();
             const { soundTitle, soundFile } = e.currentTarget;
-            onSoundUpload(soundTitle.value, soundFile.value);
+            onSoundUpload(soundTitle.value, soundFile.files[0]);
+            setModalStatus({ ...modalStatus, isModalOpen: false });
           }}
         >
           <SoundNameInput

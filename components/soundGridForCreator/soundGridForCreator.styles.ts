@@ -10,6 +10,9 @@ export const GridContainer = styled.div.attrs(
     style: {
       gridColumn: gridPosition.column,
       gridRow: gridPosition.row,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
     },
   })
 )`

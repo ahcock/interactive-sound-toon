@@ -1,5 +1,6 @@
-import { ChangeEvent, FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
+  AudioContainer,
   SoundLayerSection,
   StickyAudioPlayerContainer,
 } from "./soundLayer.styles";
@@ -41,18 +42,14 @@ const SoundLayer: FC<SoundLayerProps> = ({
     },
   });
 
-  // const [fileInfo, setFileInfo] = useState<{
-  //   gridPosition: GridInfo;
-  //   file: File | null;
-  // }>({
-  //   gridPosition: { row: "", column: "" },
-  //   file: null,
-  // });
+  const audioRefs: {
+    [key: string]: HTMLAudioElement;
+  } = {};
 
-  const inputRef = useRef<HTMLInputElement>(null);
   const clickedGridIndex = useRef<number>(0);
 
   useEffect(function registerSoundGrid() {
+    //TODO soundGridFroCreator 콤포넌트에 audio노드 프랍스를 추가해서 이 프랍스가 있으면 그것을 렌더하는 로직을 추가해야겠다
     const soundGrids: JSX.Element[] = [];
     for (let i = 1; i < 201; i++) {
       for (let j = 1; j < 11; j++) {
@@ -71,49 +68,56 @@ const SoundLayer: FC<SoundLayerProps> = ({
     setSoundGridItems(soundGrids);
   }, []);
 
+  useEffect(() => {
+    if ("sound" in audioRefs) {
+      audioRefs?.sound?.play();
+    }
+  });
+
   const onPlusClick: OnPlusClick = (gridInfo, index) => {
     clickedGridIndex.current = index;
     setModalStatus({ modalOpenedGridPosition: gridInfo, isModalOpen: true });
-    // inputRef.current?.click();
   };
 
-  // TODO: input으로부터 받은 파일을 어떻게 soundGridItems배열에 대체 시킬 것인가?
-
   const onSoundUpload: OnSoundUpload = (title, file) => {
-    console.log(title, file);
-
+    // TODO: 어떻게 업로드된 사운드를 클릭했을 때, 모달이 열리며, 이미 업로드 되있던 사운드 title, file자체를 보여줄까?
     const audioUrl = URL.createObjectURL(file);
-
     const audioElement = (
-      <audio src={audioUrl} key={audioUrl} controls>
-        Your browser does not support the
-        <code>audio</code> element.
-      </audio>
+      <SoundGridForCreator
+        index={clickedGridIndex.current}
+        key={title + file.name}
+        gridPosition={modalStatus.modalOpenedGridPosition}
+        showGrid
+        onPlusClick={onPlusClick}
+      >
+        <AudioContainer
+        // onClick={() =>
+        //   onPlusClick(
+        //     modalStatus.modalOpenedGridPosition,
+        //     clickedGridIndex.current
+        //   )
+        // }
+        >
+          {title}
+          <audio
+            src={audioUrl}
+            key={audioUrl}
+            autoPlay
+            ref={(audioNode) => {
+              if (!!audioNode) {
+                audioRefs[title] = audioNode;
+              }
+            }}
+          />
+        </AudioContainer>
+      </SoundGridForCreator>
     );
 
-    // if (event.currentTarget.files && soundGridItems) {
-    //   // setFileInfo({
-    //   //   gridPosition: clickedGridInfo.current,
-    //   //   file: event.currentTarget.files[0],
-    //   // });
-    //
-    //   const audioUrl = URL.createObjectURL(event.currentTarget.files[0]);
-    //
-    //   const audioElement = (
-    //     <audio src={audioUrl} key={audioUrl} controls>
-    //       Your browser does not support the
-    //       <code>audio</code> element.
-    //     </audio>
-    //   );
-    //
-    //   const clickedItem = soundGridItems[clickedGridIndex.current];
-    //
-    //   const newItems = [...soundGridItems];
-    //   newItems[clickedGridIndex.current] = audioElement;
-    //
-    //   soundGridItems[clickedGridIndex.current] = audioElement;
-    //   setSoundGridItems(newItems);
-    // }
+    if (!!soundGridItems) {
+      const newSoundGridItems = [...soundGridItems];
+      newSoundGridItems[clickedGridIndex.current] = audioElement;
+      setSoundGridItems(newSoundGridItems);
+    }
   };
 
   return (
@@ -132,4 +136,4 @@ const SoundLayer: FC<SoundLayerProps> = ({
 };
 
 export { SoundLayer };
-export type { OnPlusClick, OnSoundUpload, ModalStatus };
+export type { OnPlusClick, OnSoundUpload, ModalStatus, GridInfo };
