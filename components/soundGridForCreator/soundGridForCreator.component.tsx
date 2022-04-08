@@ -1,12 +1,17 @@
 import { FC } from "react";
 import { GridContainer, UploadButton } from "./soundGridForCreator.styles";
-import { GridInfo, OnPlusClick } from "../soundLayer/soundLayer.component";
+import {
+  GridInfo,
+  OnPlusClick,
+  UploadedAudioInfo,
+} from "../soundLayer/soundLayer.component";
 
 interface SoundGridForCreatorProps {
   showGrid?: boolean;
   gridPosition: GridInfo;
   onPlusClick: OnPlusClick;
   index: number;
+  uploadedAudio?: UploadedAudioInfo;
 }
 
 const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({

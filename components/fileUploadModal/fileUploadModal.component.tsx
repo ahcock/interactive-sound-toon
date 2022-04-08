@@ -1,4 +1,11 @@
-import { ChangeEvent, Dispatch, FC, SetStateAction, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  FC,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import {
   ButtonContainer,
   FileUploaderButton,
@@ -11,12 +18,12 @@ import {
   Subtitle,
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
-import { ModalStatus, OnSoundUpload } from "../soundLayer/soundLayer.component";
+import { ModalStatus, OnAudioUpload } from "../soundLayer/soundLayer.component";
 
 interface FileUploadModalComponentProps {
   setModalStatus: Dispatch<SetStateAction<ModalStatus>>;
   modalStatus: ModalStatus;
-  onSoundUpload: OnSoundUpload;
+  onSoundUpload: OnAudioUpload;
 }
 
 const FileUploadModal: FC<FileUploadModalComponentProps> = ({
@@ -31,6 +38,19 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
     soundTitle: "",
     soundFile: null,
   });
+
+  useEffect(function setInitialValue() {
+    const { uploadedAudio } = modalStatus;
+    console.log(modalStatus);
+    if (uploadedAudio) {
+      console.log(uploadedAudio);
+      const { name, file } = uploadedAudio;
+      setInputValue({
+        soundTitle: name,
+        soundFile: file,
+      });
+    }
+  }, []);
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
@@ -57,9 +77,10 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
               e.key === "Escape" &&
               setModalStatus({ ...modalStatus, isModalOpen: false })
             }
+            value={inputValue.soundTitle}
             onChange={onChangeHandler}
           />
-
+          {/*{TODO: 오디오가 등록된 파일을 누르면 모달이 뜨며 디펄트 값을 지정해줘야함}*/}
           <Subtitle>Sound File</Subtitle>
           <input
             id="file-uploader"
@@ -67,6 +88,7 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
             accept="*"
             hidden
             name="soundFile"
+            // value={inputValue.soundFile && inputValue.soundFile}
             onChange={onChangeHandler}
           />
           <FileUploaderLabel htmlFor="file-uploader">

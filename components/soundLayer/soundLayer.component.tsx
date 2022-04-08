@@ -12,12 +12,23 @@ type GridInfo = {
   row: string;
 };
 
-type OnPlusClick = (gridInfo: GridInfo, index: number) => void;
-type OnSoundUpload = (title: string, file: File) => void;
+type UploadedAudioInfo = { name: string; file: File };
+
+type OnPlusClick = (
+  gridInfo: GridInfo,
+  index: number,
+  uploadedAudio?: UploadedAudioInfo
+) => void;
+type OnAudioUpload = (
+  title: string,
+  file: File,
+  uploadedAudio?: UploadedAudioInfo
+) => void;
 
 type ModalStatus = {
   isModalOpen: boolean;
   modalOpenedGridPosition: GridInfo;
+  uploadedAudio?: UploadedAudioInfo;
 };
 
 interface SoundLayerProps {
@@ -49,7 +60,6 @@ const SoundLayer: FC<SoundLayerProps> = ({
   const clickedGridIndex = useRef<number>(0);
 
   useEffect(function registerSoundGrid() {
-    //TODO soundGridFroCreator 콤포넌트에 audio노드 프랍스를 추가해서 이 프랍스가 있으면 그것을 렌더하는 로직을 추가해야겠다
     const soundGrids: JSX.Element[] = [];
     for (let i = 1; i < 201; i++) {
       for (let j = 1; j < 11; j++) {
@@ -74,12 +84,23 @@ const SoundLayer: FC<SoundLayerProps> = ({
     }
   });
 
-  const onPlusClick: OnPlusClick = (gridInfo, index) => {
+  const onPlusClick: OnPlusClick = (gridInfo, index, uploadedAudio) => {
+    console.log("눌림", uploadedAudio);
     clickedGridIndex.current = index;
-    setModalStatus({ modalOpenedGridPosition: gridInfo, isModalOpen: true });
+    setModalStatus({
+      modalOpenedGridPosition: gridInfo,
+      isModalOpen: true,
+      ...(uploadedAudio && { uploadedAudio }),
+    });
+
+    console.log({
+      modalOpenedGridPosition: gridInfo,
+      isModalOpen: true,
+      ...(uploadedAudio && uploadedAudio),
+    });
   };
 
-  const onSoundUpload: OnSoundUpload = (title, file) => {
+  const onSoundUpload: OnAudioUpload = (title, file) => {
     // TODO: 어떻게 업로드된 사운드를 클릭했을 때, 모달이 열리며, 이미 업로드 되있던 사운드 title, file자체를 보여줄까?
     const audioUrl = URL.createObjectURL(file);
     const audioElement = (
@@ -91,12 +112,13 @@ const SoundLayer: FC<SoundLayerProps> = ({
         onPlusClick={onPlusClick}
       >
         <AudioContainer
-        // onClick={() =>
-        //   onPlusClick(
-        //     modalStatus.modalOpenedGridPosition,
-        //     clickedGridIndex.current
-        //   )
-        // }
+          onClick={() =>
+            onPlusClick(
+              modalStatus.modalOpenedGridPosition,
+              clickedGridIndex.current,
+              { name: title, file }
+            )
+          }
         >
           {title}
           <audio
@@ -136,4 +158,10 @@ const SoundLayer: FC<SoundLayerProps> = ({
 };
 
 export { SoundLayer };
-export type { OnPlusClick, OnSoundUpload, ModalStatus, GridInfo };
+export type {
+  OnPlusClick,
+  OnAudioUpload,
+  ModalStatus,
+  GridInfo,
+  UploadedAudioInfo,
+};
