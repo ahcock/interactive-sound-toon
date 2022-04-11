@@ -39,22 +39,26 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
     soundFile: null,
   });
 
+  const [isUploadDisabled, setIsUploadDisabled] = useState(false);
+
   useEffect(function setInitialValue() {
     const { uploadedAudio } = modalStatus;
-    console.log(modalStatus);
+
     if (uploadedAudio) {
-      console.log(uploadedAudio);
       const { name, file } = uploadedAudio;
       setInputValue({
         soundTitle: name,
         soundFile: file,
       });
+
+      setIsUploadDisabled(true);
     }
   }, []);
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
     setInputValue({ ...inputValue, [name]: !!files ? files[0] : value });
+    setIsUploadDisabled(false);
   };
 
   return (
@@ -97,7 +101,9 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
           </FileUploaderLabel>
 
           <ButtonContainer>
-            <FileUploaderButton type="submit">Upload</FileUploaderButton>
+            <FileUploaderButton type="submit" disabled={isUploadDisabled}>
+              Upload
+            </FileUploaderButton>
             <FileUploaderButton
               type="button"
               onClick={(e) => {

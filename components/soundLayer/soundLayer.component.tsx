@@ -92,12 +92,6 @@ const SoundLayer: FC<SoundLayerProps> = ({
       isModalOpen: true,
       ...(uploadedAudio && { uploadedAudio }),
     });
-
-    console.log({
-      modalOpenedGridPosition: gridInfo,
-      isModalOpen: true,
-      ...(uploadedAudio && uploadedAudio),
-    });
   };
 
   const onSoundUpload: OnAudioUpload = (title, file) => {

@@ -75,4 +75,7 @@ export const FileUploaderButton = styled.button`
   background-color: rgba(69, 206, 133, 0.9);
   color: rgb(117, 117, 117);
   font-weight: 500;
+  &:disabled {
+    background-color: gainsboro;
+  }
 `;
