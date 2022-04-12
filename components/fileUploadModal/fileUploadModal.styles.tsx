@@ -79,3 +79,10 @@ export const FileUploaderButton = styled.button`
     background-color: gainsboro;
   }
 `;
+
+export const DeleteButtonContainer = styled.span`
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+`;

@@ -19,11 +19,14 @@ type OnPlusClick = (
   index: number,
   uploadedAudio?: UploadedAudioInfo
 ) => void;
+
 type OnAudioUpload = (
   title: string,
   file: File,
   uploadedAudio?: UploadedAudioInfo
 ) => void;
+
+type OnAudioDelete = (gridPosition: GridInfo) => void;
 
 type ModalStatus = {
   isModalOpen: boolean;
@@ -85,7 +88,6 @@ const SoundLayer: FC<SoundLayerProps> = ({
   });
 
   const onPlusClick: OnPlusClick = (gridInfo, index, uploadedAudio) => {
-    console.log("눌림", uploadedAudio);
     clickedGridIndex.current = index;
     setModalStatus({
       modalOpenedGridPosition: gridInfo,
@@ -136,6 +138,22 @@ const SoundLayer: FC<SoundLayerProps> = ({
     }
   };
 
+  const onAudioDelete: OnAudioDelete = (gridPosition: GridInfo) => {
+    if (!!soundGridItems) {
+      const newSoundGridItems = [...soundGridItems];
+      newSoundGridItems[clickedGridIndex.current] = (
+        <SoundGridForCreator
+          index={clickedGridIndex.current}
+          key={`row${gridPosition.row[0]}column${gridPosition.column[0]}`}
+          gridPosition={gridPosition}
+          showGrid
+          onPlusClick={onPlusClick}
+        />
+      );
+      setSoundGridItems(newSoundGridItems);
+    }
+  };
+
   return (
     <SoundLayerSection height={height} width={width} show>
       <StickyAudioPlayerContainer></StickyAudioPlayerContainer>
@@ -145,6 +163,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
           setModalStatus={setModalStatus}
           modalStatus={modalStatus}
           onSoundUpload={onSoundUpload}
+          onAudioDelete={onAudioDelete}
         />
       )}
     </SoundLayerSection>
@@ -158,4 +177,5 @@ export type {
   ModalStatus,
   GridInfo,
   UploadedAudioInfo,
+  OnAudioDelete,
 };

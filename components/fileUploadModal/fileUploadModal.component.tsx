@@ -16,20 +16,27 @@ import {
   ModalTitle,
   SoundNameInput,
   Subtitle,
+  DeleteButtonContainer,
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
-import { ModalStatus, OnAudioUpload } from "../soundLayer/soundLayer.component";
+import {
+  ModalStatus,
+  OnAudioDelete,
+  OnAudioUpload,
+} from "../soundLayer/soundLayer.component";
 
 interface FileUploadModalComponentProps {
   setModalStatus: Dispatch<SetStateAction<ModalStatus>>;
   modalStatus: ModalStatus;
   onSoundUpload: OnAudioUpload;
+  onAudioDelete: OnAudioDelete;
 }
 
 const FileUploadModal: FC<FileUploadModalComponentProps> = ({
   setModalStatus,
   modalStatus,
   onSoundUpload,
+  onAudioDelete,
 }) => {
   const [inputValue, setInputValue] = useState<{
     soundTitle: string;
@@ -50,15 +57,22 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
         soundTitle: name,
         soundFile: file,
       });
-
-      setIsUploadDisabled(true);
     }
+    setIsUploadDisabled(true);
   }, []);
+
+  useEffect(
+    function setUploadButtonStatus() {
+      !!inputValue.soundFile && !!inputValue.soundTitle
+        ? setIsUploadDisabled(false)
+        : setIsUploadDisabled(true);
+    },
+    [inputValue]
+  );
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
     setInputValue({ ...inputValue, [name]: !!files ? files[0] : value });
-    setIsUploadDisabled(false);
   };
 
   return (
@@ -101,8 +115,19 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
           </FileUploaderLabel>
 
           <ButtonContainer>
+            <DeleteButtonContainer>
+              <FileUploaderButton
+                type="button"
+                onClick={() => {
+                  onAudioDelete(modalStatus.modalOpenedGridPosition);
+                  setModalStatus({ ...modalStatus, isModalOpen: false });
+                }}
+              >
+                Delete
+              </FileUploaderButton>
+            </DeleteButtonContainer>
             <FileUploaderButton type="submit" disabled={isUploadDisabled}>
-              Upload
+              Save
             </FileUploaderButton>
             <FileUploaderButton
               type="button"
