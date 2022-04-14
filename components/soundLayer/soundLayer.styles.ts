@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { GridInfo } from "./soundLayer.component";
 
 export const SoundLayerSection = styled.section<{
   width: number;
@@ -20,4 +21,31 @@ export const StickyAudioPlayerContainer = styled.article`
   left: 50%;
   width: max-content;
   height: 100px;
+`;
+
+export const AudioContainer = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background-color: aliceblue;
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+`;
+
+export const StyledAudio = styled.audio`
+  //&::-webkit-media-controls-panel {
+  //  background-color: #56aeff;
+  //}
+  //
+  //&::-webkit-media-controls-mute-button,
+  //::-webkit-media-controls-play-button,
+  //::-webkit-media-controls-timeline-container,
+  //::-webkit-media-controls-current-time-display,
+  //::-webkit-media-controls-time-remaining-display,
+  //::-webkit-media-controls-timeline {
+  //  display: none;
+  //}
 `;

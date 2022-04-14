@@ -1,9 +1,38 @@
-import { ChangeEvent, FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
+  AudioContainer,
   SoundLayerSection,
   StickyAudioPlayerContainer,
 } from "./soundLayer.styles";
 import { SoundGridForCreator } from "../soundGridForCreator/soundGridForCreator.component";
+import { FileUploadModal } from "../fileUploadModal/fileUploadModal.component";
+
+type GridInfo = {
+  column: string;
+  row: string;
+};
+
+type UploadedAudioInfo = { name: string; file: File };
+
+type OnPlusClick = (
+  gridInfo: GridInfo,
+  index: number,
+  uploadedAudio?: UploadedAudioInfo
+) => void;
+
+type OnAudioUpload = (
+  title: string,
+  file: File,
+  uploadedAudio?: UploadedAudioInfo
+) => void;
+
+type OnAudioDelete = (gridPosition: GridInfo) => void;
+
+type ModalStatus = {
+  isModalOpen: boolean;
+  modalOpenedGridPosition: GridInfo;
+  uploadedAudio?: UploadedAudioInfo;
+};
 
 interface SoundLayerProps {
   imageLayerDimension: {
@@ -16,24 +45,30 @@ const SoundLayer: FC<SoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
   const [soundGridItems, setSoundGridItems] = useState<
-    JSX.Element[] | undefined
+    (JSX.Element | File)[] | undefined
   >();
 
-  const [fileInfo, setFileInfo] = useState<{
-    gridPosition: string;
-    file: File | null;
-  }>({
-    gridPosition: "",
-    file: null,
+  const [modalStatus, setModalStatus] = useState<ModalStatus>({
+    isModalOpen: false,
+    modalOpenedGridPosition: {
+      column: "",
+      row: "",
+    },
   });
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const audioRefs: {
+    [key: string]: HTMLAudioElement;
+  } = {};
+
+  const clickedGridIndex = useRef<number>(0);
+
   useEffect(function registerSoundGrid() {
-    const soundGrids = [];
+    const soundGrids: JSX.Element[] = [];
     for (let i = 1; i < 201; i++) {
       for (let j = 1; j < 11; j++) {
         soundGrids.push(
           <SoundGridForCreator
+            index={soundGrids.length}
             key={`row${i}column${j}`}
             gridPosition={{ row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` }}
             showGrid
@@ -46,36 +81,101 @@ const SoundLayer: FC<SoundLayerProps> = ({
     setSoundGridItems(soundGrids);
   }, []);
 
-  const onPlusClick = (info: string) => {
-    //여기서 받아온 gridInfo를 useRef에 키벨류 값으로 저장 해 둔 후, 바로 아래 onInputChange에서 ref값을 받아와setFileInfo를 file(blob) 값과 함꼐 set 해준다
-    inputRef.current?.click();
+  useEffect(() => {
+    if ("sound" in audioRefs) {
+      audioRefs?.sound?.play();
+    }
+  });
+
+  const onPlusClick: OnPlusClick = (gridInfo, index, uploadedAudio) => {
+    clickedGridIndex.current = index;
+    setModalStatus({
+      modalOpenedGridPosition: gridInfo,
+      isModalOpen: true,
+      ...(uploadedAudio && { uploadedAudio }),
+    });
   };
 
-  const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.files) {
-      setFileInfo({ gridPosition: "", file: event.currentTarget.files[0] });
+  const onSoundUpload: OnAudioUpload = (title, file) => {
+    // TODO: 어떻게 업로드된 사운드를 클릭했을 때, 모달이 열리며, 이미 업로드 되있던 사운드 title, file자체를 보여줄까?
+    const audioUrl = URL.createObjectURL(file);
+    const audioElement = (
+      <SoundGridForCreator
+        index={clickedGridIndex.current}
+        key={title + file.name}
+        gridPosition={modalStatus.modalOpenedGridPosition}
+        showGrid
+        onPlusClick={onPlusClick}
+      >
+        <AudioContainer
+          onClick={() =>
+            onPlusClick(
+              modalStatus.modalOpenedGridPosition,
+              clickedGridIndex.current,
+              { name: title, file }
+            )
+          }
+        >
+          {title}
+          <audio
+            src={audioUrl}
+            key={audioUrl}
+            autoPlay
+            ref={(audioNode) => {
+              if (!!audioNode) {
+                audioRefs[title] = audioNode;
+              }
+            }}
+          />
+        </AudioContainer>
+      </SoundGridForCreator>
+    );
+
+    if (!!soundGridItems) {
+      const newSoundGridItems = [...soundGridItems];
+      newSoundGridItems[clickedGridIndex.current] = audioElement;
+      setSoundGridItems(newSoundGridItems);
     }
   };
 
-  console.log(fileInfo);
+  const onAudioDelete: OnAudioDelete = (gridPosition: GridInfo) => {
+    if (!!soundGridItems) {
+      const newSoundGridItems = [...soundGridItems];
+      newSoundGridItems[clickedGridIndex.current] = (
+        <SoundGridForCreator
+          index={clickedGridIndex.current}
+          key={`row${gridPosition.row[0]}column${gridPosition.column[0]}`}
+          gridPosition={gridPosition}
+          showGrid
+          onPlusClick={onPlusClick}
+        />
+      );
+      setSoundGridItems(newSoundGridItems);
+    }
+  };
 
   return (
     <SoundLayerSection height={height} width={width} show>
-      <StickyAudioPlayerContainer>
-        <form>
-          <input
-            id="audio_uploader"
-            ref={inputRef}
-            type="file"
-            accept="*"
-            onChange={onInputChange}
-            hidden
-          />
-        </form>
-      </StickyAudioPlayerContainer>
+      <StickyAudioPlayerContainer></StickyAudioPlayerContainer>
       {soundGridItems}
+      {modalStatus.isModalOpen && (
+        <FileUploadModal
+          setModalStatus={setModalStatus}
+          modalStatus={modalStatus}
+          onSoundUpload={onSoundUpload}
+          onAudioDelete={onAudioDelete}
+        />
+      )}
     </SoundLayerSection>
   );
 };
 
 export { SoundLayer };
+export type {
+  OnPlusClick,
+  OnAudioUpload,
+  ModalStatus,
+  GridInfo,
+  UploadedAudioInfo,
+  OnAudioDelete,
+};

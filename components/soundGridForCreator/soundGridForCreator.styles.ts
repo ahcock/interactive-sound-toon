@@ -10,6 +10,9 @@ export const GridContainer = styled.div.attrs(
     style: {
       gridColumn: gridPosition.column,
       gridRow: gridPosition.row,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
     },
   })
 )`
@@ -32,7 +35,7 @@ export const UploadButton = styled.p`
   align-items: center;
   opacity: 0;
   &:hover {
-    background: #fffce1;
+    background: rgba(124, 115, 230, 0.3);
     opacity: 1;
     color: black;
     cursor: pointer;
