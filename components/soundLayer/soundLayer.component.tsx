@@ -38,12 +38,6 @@ interface SoundLayerProps {
   };
 }
 
-// index={soundGrids.length}
-// key={`row${i}column${j}`}
-// gridPosition={{ row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` }}
-// showGrid
-// onPlusClick={onPlusClick}
-
 interface SoundGridData {
   index: number;
   key: string;
