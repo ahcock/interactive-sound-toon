@@ -66,11 +66,11 @@ const SoundLayer: FC<SoundLayerProps> = ({
     clickedGridIndex: 0,
   });
 
-  const audioRefs: {
-    [key: string]: HTMLAudioElement;
-  } = {};
+  // const audioRefs = useRef<{
+  //   [key: string]: HTMLAudioElement;
+  // }>({});
 
-  const clickedGridIndex = useRef<number>(0);
+  let audioRef: Element;
 
   useEffect(function registerSoundGrid() {
     const soundGridInfo: SoundGridData[] = [];
@@ -91,13 +91,37 @@ const SoundLayer: FC<SoundLayerProps> = ({
   }, []);
 
   useEffect(() => {
-    if ("sound" in audioRefs) {
-      audioRefs?.sound?.play();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        console.log(entries);
+      },
+      { root: null, rootMargin: "0px", threshold: 0 }
+    );
+
+    // Object.values(audioRefs.current).forEach((element) => {
+    //   console.log(element);
+    //   observer.observe(element);
+    // });
+    if (audioRef) {
+      console.log("test");
+      observer.observe(audioRef);
     }
-  });
+  }, [soundGridData]);
+
+  const refCallback = (audioNode: HTMLAudioElement) => {
+    if (!!audioNode) {
+      // audioRefs.current[audioInfo.title] = audioNode;
+      audioRef = audioNode;
+    }
+  };
+
+  // useEffect(() => {
+  //   if ("sound" in audioRefs) {
+  //     audioRefs?.sound?.play();
+  //   }
+  // });
 
   const onPlusClick: OnPlusClick = (gridInfo, index, uploadedAudio) => {
-    clickedGridIndex.current = index;
     setModalStatus({
       modalOpenedGridPosition: gridInfo,
       isModalOpen: true,
@@ -169,15 +193,9 @@ const SoundLayer: FC<SoundLayerProps> = ({
             {audioInfo && (
               <AudioContainer onClick={audioInfo.onAudioContainerClick}>
                 {audioInfo.title}
-                <audio
-                  src={audioInfo.src}
-                  key={audioInfo.key}
-                  // ref={(audioNode) => {
-                  //   if (!!audioNode) {
-                  //     audioRefs[title] = audioNode;
-                  //   }
-                  // }}
-                />
+                <audio ref={refCallback} controls>
+                  <source src={audioInfo.src} />
+                </audio>
               </AudioContainer>
             )}
           </SoundGridForCreator>
