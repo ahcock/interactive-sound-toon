@@ -1,5 +1,4 @@
 import styled from "styled-components";
-import { GridInfo } from "./soundLayer.component";
 
 export const SoundLayerSection = styled.section<{
   width: number;
@@ -36,6 +35,7 @@ export const AudioContainer = styled.div`
 `;
 
 export const StyledAudio = styled.audio`
+  visibility: hidden;
   //&::-webkit-media-controls-panel {
   //  background-color: #56aeff;
   //}
