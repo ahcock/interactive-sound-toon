@@ -56,6 +56,13 @@ interface SoundGridData {
   };
 }
 
+// TODO: 등록된 사운드 어딘가에 저장하기
+// TODO: 저장된 사운드 불러오기, 렌더링 하기
+// TODO: 서버에 사운드를 저장하기
+// TODO: 서버에서 사운드를 불러오기, 렌더링 하기
+// TODO: 데이터 베이스 스키마는 어떻게 짤 것인가?
+// TODO: 회차별로 짤 것인가?
+
 const SoundLayer: FC<SoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
