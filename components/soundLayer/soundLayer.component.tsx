@@ -1,5 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { AudioContainer, SoundLayerSection } from "./soundLayer.styles";
+import {
+  AudioContainer,
+  SoundLayerSection,
+  StyledAudio,
+} from "./soundLayer.styles";
 import { SoundGridForCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { FileUploadModal } from "../fileUploadModal/fileUploadModal.component";
 
@@ -52,6 +56,13 @@ interface SoundGridData {
   };
 }
 
+// TODO: 등록된 사운드 어딘가에 저장하기
+// TODO: 저장된 사운드 불러오기, 렌더링 하기
+// TODO: 서버에 사운드를 저장하기
+// TODO: 서버에서 사운드를 불러오기, 렌더링 하기
+// TODO: 데이터 베이스 스키마는 어떻게 짤 것인가?
+// TODO: 회차별로 짤 것인가?
+
 const SoundLayer: FC<SoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
@@ -66,11 +77,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
     clickedGridIndex: 0,
   });
 
-  const audioRefs: {
-    [key: string]: HTMLAudioElement;
-  } = {};
-
-  const clickedGridIndex = useRef<number>(0);
+  const audioRef = useRef<{ [key: string]: HTMLAudioElement }>({});
 
   useEffect(function registerSoundGrid() {
     const soundGridInfo: SoundGridData[] = [];
@@ -91,13 +98,38 @@ const SoundLayer: FC<SoundLayerProps> = ({
   }, []);
 
   useEffect(() => {
-    if ("sound" in audioRefs) {
-      audioRefs?.sound?.play();
+    if (!!audioRef && !!audioRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const soundName = entry.target.getAttribute("data-name");
+            if (entry.isIntersecting && !!soundName) {
+              audioRef.current[soundName].play();
+            }
+          });
+        },
+        { root: null, rootMargin: "0px", threshold: 0 }
+      );
+
+      if (audioRef) {
+        Object.values(audioRef.current).forEach((element) => {
+          observer.observe(element);
+        });
+      }
     }
-  });
+  }, [soundGridData]);
+
+  const refCallback = (audioNode: HTMLAudioElement) => {
+    if (!!audioNode) {
+      const soundName = audioNode.getAttribute("data-name");
+
+      if (!!soundName) {
+        audioRef.current[soundName] = audioNode;
+      }
+    }
+  };
 
   const onPlusClick: OnPlusClick = (gridInfo, index, uploadedAudio) => {
-    clickedGridIndex.current = index;
     setModalStatus({
       modalOpenedGridPosition: gridInfo,
       isModalOpen: true,
@@ -107,7 +139,6 @@ const SoundLayer: FC<SoundLayerProps> = ({
   };
 
   const onSoundUpload: OnAudioUpload = (title, file) => {
-    // TODO: 어떻게 업로드된 사운드를 클릭했을 때, 모달이 열리며, 이미 업로드 되있던 사운드 title, file자체를 보여줄까?
     const audioUrl = URL.createObjectURL(file);
 
     const soundGridDataWithAudioInfo: SoundGridData = {
@@ -169,15 +200,13 @@ const SoundLayer: FC<SoundLayerProps> = ({
             {audioInfo && (
               <AudioContainer onClick={audioInfo.onAudioContainerClick}>
                 {audioInfo.title}
-                <audio
-                  src={audioInfo.src}
-                  key={audioInfo.key}
-                  // ref={(audioNode) => {
-                  //   if (!!audioNode) {
-                  //     audioRefs[title] = audioNode;
-                  //   }
-                  // }}
-                />
+                <StyledAudio
+                  ref={refCallback}
+                  data-name={audioInfo.title}
+                  controls
+                >
+                  <source src={audioInfo.src} />
+                </StyledAudio>
               </AudioContainer>
             )}
           </SoundGridForCreator>
