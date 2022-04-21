@@ -2,6 +2,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { PageContainer } from "./samplePageIndex.styles";
 import { SoundLayer } from "../../components/soundLayer/soundLayer.component";
 import ImageLayer from "../../components/imageLayer/imageLayer.component";
+import clientPromise from "../../lib/mongodb";
 
 interface SampleImageType {
   src: string;
@@ -18,7 +19,8 @@ interface TotalImageDimensionType {
 // {/*TODO statde 토글로 인해, UI를 더이상 +모양의 인풋 콤포넌트가 "아닌", 커스터마이징 된 오디오 플레이어를 보여준다(재생, 정지,볼륨 기능 탑재한) UI 오른쪽 윗쪽에  */}
 // {/*TOD 엑스버튼을 두어 그것을 누르면 서버에서 삭제가 되는 로직을 만들어야 겠다 */}
 
-const Sample: FC = () => {
+const Sample: FC<{ data: any }> = ({ data }) => {
+  console.log(data);
   const [imageList, setImageList] = useState<SampleImageType[]>([]);
   const [imageLayerDimension, setImageLayerDimension] =
     useState<TotalImageDimensionType>({ width: 0, height: 0 });
@@ -55,10 +57,19 @@ const Sample: FC = () => {
 };
 
 const getStaticProps = async () => {
+  const client = await clientPromise;
+  const db = client.db("sample_restaurants");
+  const document = await db.collection("restaurants").findOne({
+    name: "Wilken'S Fine Food",
+  });
+
   return {
-    props: {},
+    props: {
+      data: JSON.parse(JSON.stringify(document)),
+    },
   };
 };
 
 export default Sample;
+export { getStaticProps };
 export type { SampleImageType };
