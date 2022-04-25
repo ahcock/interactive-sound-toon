@@ -67,7 +67,6 @@ const SoundLayer: FC<SoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
   const [soundGridData, setSoundGridData] = useState<SoundGridData[]>([]);
-
   const [modalStatus, setModalStatus] = useState<ModalStatus>({
     isModalOpen: false,
     modalOpenedGridPosition: {
@@ -77,8 +76,13 @@ const SoundLayer: FC<SoundLayerProps> = ({
     clickedGridIndex: 0,
   });
 
+  const [savedSoundGridData, setSavedSoundGridData] = useState<SoundGridData[]>(
+    []
+  );
+
   const audioRef = useRef<{ [key: string]: HTMLAudioElement }>({});
 
+  // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onPlusClick. showGrid 빼고
   useEffect(function registerSoundGrid() {
     const soundGridInfo: SoundGridData[] = [];
 
@@ -140,6 +144,14 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
   const onSoundUpload: OnAudioUpload = (title, file) => {
     const audioUrl = URL.createObjectURL(file);
+
+    //TODO: 이중에 서버로 올라가야 할 것
+    // index: number,
+    // gridPosition: {
+    //   column: string;
+    //   row: string;
+    // }
+    // audioInfo: {title: string, src: string;}
 
     const soundGridDataWithAudioInfo: SoundGridData = {
       index: modalStatus.clickedGridIndex,
@@ -220,6 +232,13 @@ const SoundLayer: FC<SoundLayerProps> = ({
           onAudioDelete={onAudioDelete}
         />
       )}
+      <button
+        onClick={() => {
+          fetch("/api/insertAudioInfo", { method: "PUT" });
+        }}
+      >
+        업로드
+      </button>
     </SoundLayerSection>
   );
 };
