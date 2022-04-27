@@ -8,5 +8,7 @@ export default async function insertAudioInfo(
 ) {
   const client = await clientPromise;
   const db = client.db("interactive_toon");
-  await db.collection("audioData").insertOne({ test: "테스트 도큐먼트 인풋" });
+  // await db.collection("audioData").insertOne({ test: "테스트 도큐먼트 인풋" });
+
+  console.log(req.body);
 }

@@ -234,7 +234,10 @@ const SoundLayer: FC<SoundLayerProps> = ({
       )}
       <button
         onClick={() => {
-          fetch("/api/insertAudioInfo", { method: "PUT" });
+          fetch("/api/insertAudioInfo", {
+            method: "PUT",
+            body: JSON.stringify(soundGridData),
+          });
         }}
       >
         업로드
