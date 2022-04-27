@@ -22,7 +22,7 @@ export const StickyAudioPlayerContainer = styled.article`
   height: 100px;
 `;
 
-export const AudioContainer = styled.div`
+export const SoundContainer = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 20px;
