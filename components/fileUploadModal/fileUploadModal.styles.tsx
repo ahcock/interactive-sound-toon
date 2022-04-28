@@ -86,3 +86,7 @@ export const DeleteButtonContainer = styled.span`
   align-items: center;
   cursor: pointer;
 `;
+
+export const VolumeSlider = styled.input`
+  background-color: gainsboro;
+`;
