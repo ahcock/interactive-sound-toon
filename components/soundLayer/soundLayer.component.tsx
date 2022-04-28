@@ -1,10 +1,10 @@
 import { FC, useEffect, useRef, useState } from "react";
 import {
-  AudioContainer,
+  SoundContainer,
   SoundLayerSection,
   StyledAudio,
 } from "./soundLayer.styles";
-import { SoundGridForCreator } from "../soundGridForCreator/soundGridForCreator.component";
+import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { FileUploadModal } from "../fileUploadModal/fileUploadModal.component";
 
 type GridInfo = {
@@ -12,26 +12,24 @@ type GridInfo = {
   row: string;
 };
 
-type UploadedAudioInfo = { name: string; file: File };
+type SavedSound = { name: string; file: File };
 
-type OnPlusClick = (
+type OnGridClick = (gridInfo: GridInfo, index: number) => void;
+
+type OnSavedSoundClick = (
   gridInfo: GridInfo,
   index: number,
-  uploadedAudio?: UploadedAudioInfo
+  savedSound: SavedSound
 ) => void;
 
-type OnAudioUpload = (
-  title: string,
-  file: File,
-  uploadedAudio?: UploadedAudioInfo
-) => void;
+type OnSoundSave = (title: string, file: File, savedSound?: SavedSound) => void;
 
-type OnAudioDelete = (gridPosition: GridInfo) => void;
+type OnSoundDelete = (gridPosition: GridInfo) => void;
 
-type ModalStatus = {
+type SoundModalStatus = {
   isModalOpen: boolean;
   modalOpenedGridPosition: GridInfo;
-  uploadedAudio?: UploadedAudioInfo;
+  savedSound?: SavedSound;
   clickedGridIndex: number;
 };
 
@@ -47,12 +45,12 @@ interface SoundGridData {
   key: string;
   gridPosition: GridInfo;
   showGrid: boolean;
-  onPlusClick: OnPlusClick;
-  audioInfo?: {
+  onGridClick: OnGridClick;
+  soundInfo?: {
     src: string;
     title: string;
     key: string;
-    onAudioContainerClick: () => void;
+    onSoundContainerClick: () => void;
   };
 }
 
@@ -67,7 +65,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
   const [soundGridData, setSoundGridData] = useState<SoundGridData[]>([]);
-  const [modalStatus, setModalStatus] = useState<ModalStatus>({
+  const [soundModalStatus, setSoundModalStatus] = useState<SoundModalStatus>({
     isModalOpen: false,
     modalOpenedGridPosition: {
       column: "",
@@ -80,9 +78,10 @@ const SoundLayer: FC<SoundLayerProps> = ({
     []
   );
 
-  const audioRef = useRef<{ [key: string]: HTMLAudioElement }>({});
+  const soundRef = useRef<{ [key: string]: HTMLAudioElement }>({});
 
-  // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onPlusClick. showGrid 빼고
+  // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onGridClick. showGrid 빼고
+
   useEffect(function registerSoundGrid() {
     const soundGridInfo: SoundGridData[] = [];
 
@@ -93,7 +92,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
           key: `row${i}column${j}`,
           gridPosition: { row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` },
           showGrid: true,
-          onPlusClick: onPlusClick,
+          onGridClick: onGridClick,
         });
       }
     }
@@ -101,48 +100,63 @@ const SoundLayer: FC<SoundLayerProps> = ({
     setSoundGridData(soundGridInfo);
   }, []);
 
-  useEffect(() => {
-    if (!!audioRef && !!audioRef.current) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const soundName = entry.target.getAttribute("data-name");
-            if (entry.isIntersecting && !!soundName) {
-              audioRef.current[soundName].play();
-            }
-          });
-        },
-        { root: null, rootMargin: "0px", threshold: 0 }
-      );
+  useEffect(
+    function setIntersectionObserver() {
+      if (!!soundRef && !!soundRef.current) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const soundName = entry.target.getAttribute("data-name");
+              if (entry.isIntersecting && !!soundName) {
+                soundRef.current[soundName].play();
+              }
+            });
+          },
+          { root: null, rootMargin: "0px", threshold: 0 }
+        );
 
-      if (audioRef) {
-        Object.values(audioRef.current).forEach((element) => {
-          observer.observe(element);
-        });
+        if (soundRef) {
+          Object.values(soundRef.current).forEach((element) => {
+            observer.observe(element);
+          });
+        }
       }
-    }
-  }, [soundGridData]);
+    },
+    [soundGridData]
+  );
 
   const refCallback = (audioNode: HTMLAudioElement) => {
     if (!!audioNode) {
       const soundName = audioNode.getAttribute("data-name");
 
       if (!!soundName) {
-        audioRef.current[soundName] = audioNode;
+        soundRef.current[soundName] = audioNode;
       }
     }
   };
 
-  const onPlusClick: OnPlusClick = (gridInfo, index, uploadedAudio) => {
-    setModalStatus({
+  const onGridClick: OnGridClick = (gridInfo, index) => {
+    setSoundModalStatus({
       modalOpenedGridPosition: gridInfo,
       isModalOpen: true,
       clickedGridIndex: index,
-      ...(uploadedAudio && { uploadedAudio }),
     });
   };
 
-  const onSoundUpload: OnAudioUpload = (title, file) => {
+  const onSavedSoundClick: OnSavedSoundClick = (
+    gridInfo,
+    index,
+    savedSound
+  ) => {
+    setSoundModalStatus({
+      savedSound,
+      isModalOpen: true,
+      modalOpenedGridPosition: gridInfo,
+      clickedGridIndex: index,
+    });
+  };
+
+  const onSoundSave: OnSoundSave = (title, file) => {
     const audioUrl = URL.createObjectURL(file);
 
     //TODO: 이중에 서버로 올라가야 할 것
@@ -153,20 +167,20 @@ const SoundLayer: FC<SoundLayerProps> = ({
     // }
     // audioInfo: {title: string, src: string;}
 
-    const soundGridDataWithAudioInfo: SoundGridData = {
-      index: modalStatus.clickedGridIndex,
+    const gridDataWithSound: SoundGridData = {
+      index: soundModalStatus.clickedGridIndex,
       key: title + file.name,
-      gridPosition: modalStatus.modalOpenedGridPosition,
+      gridPosition: soundModalStatus.modalOpenedGridPosition,
       showGrid: true,
-      onPlusClick: onPlusClick,
-      audioInfo: {
+      onGridClick: onGridClick,
+      soundInfo: {
         title: title,
         src: audioUrl,
         key: audioUrl,
-        onAudioContainerClick: () =>
-          onPlusClick(
-            modalStatus.modalOpenedGridPosition,
-            modalStatus.clickedGridIndex,
+        onSoundContainerClick: () =>
+          onSavedSoundClick(
+            soundModalStatus.modalOpenedGridPosition,
+            soundModalStatus.clickedGridIndex,
             { name: title, file }
           ),
       },
@@ -174,21 +188,20 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
     if (!!soundGridData) {
       const newSoundGridData = [...soundGridData];
-      newSoundGridData[modalStatus.clickedGridIndex] =
-        soundGridDataWithAudioInfo;
+      newSoundGridData[soundModalStatus.clickedGridIndex] = gridDataWithSound;
       setSoundGridData(newSoundGridData);
     }
   };
 
-  const onAudioDelete: OnAudioDelete = (gridPosition: GridInfo) => {
+  const onSoundDelete: OnSoundDelete = (gridPosition: GridInfo) => {
     if (!!soundGridData) {
       const newSoundGridData = [...soundGridData];
-      newSoundGridData[modalStatus.clickedGridIndex] = {
-        index: modalStatus.clickedGridIndex,
+      newSoundGridData[soundModalStatus.clickedGridIndex] = {
+        index: soundModalStatus.clickedGridIndex,
         key: `row${gridPosition.row[0]}column${gridPosition.column[0]}`,
         gridPosition: gridPosition,
         showGrid: true,
-        onPlusClick: onPlusClick,
+        onGridClick: onGridClick,
       };
 
       setSoundGridData(newSoundGridData);
@@ -197,39 +210,39 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
   return (
     <SoundLayerSection height={height} width={width} show>
-      {soundGridData.map((soundGridProp) => {
-        const { index, key, gridPosition, showGrid, onPlusClick, audioInfo } =
-          soundGridProp;
+      {soundGridData.map((data) => {
+        const { index, key, gridPosition, showGrid, onGridClick, soundInfo } =
+          data;
 
         return (
-          <SoundGridForCreator
+          <GridForSoundCreator
             index={index}
             key={key}
             gridPosition={gridPosition}
             showGrid={showGrid}
-            onPlusClick={onPlusClick}
+            onGridClick={onGridClick}
           >
-            {audioInfo && (
-              <AudioContainer onClick={audioInfo.onAudioContainerClick}>
-                {audioInfo.title}
+            {soundInfo && (
+              <SoundContainer onClick={soundInfo.onSoundContainerClick}>
+                {soundInfo.title}
                 <StyledAudio
                   ref={refCallback}
-                  data-name={audioInfo.title}
+                  data-name={soundInfo.title}
                   controls
                 >
-                  <source src={audioInfo.src} />
+                  <source src={soundInfo.src} />
                 </StyledAudio>
-              </AudioContainer>
+              </SoundContainer>
             )}
-          </SoundGridForCreator>
+          </GridForSoundCreator>
         );
       })}
-      {modalStatus.isModalOpen && (
+      {soundModalStatus.isModalOpen && (
         <FileUploadModal
-          setModalStatus={setModalStatus}
-          modalStatus={modalStatus}
-          onSoundUpload={onSoundUpload}
-          onAudioDelete={onAudioDelete}
+          setModalStatus={setSoundModalStatus}
+          modalStatus={soundModalStatus}
+          onSoundUpload={onSoundSave}
+          onAudioDelete={onSoundDelete}
         />
       )}
       <button
@@ -248,10 +261,10 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
 export { SoundLayer };
 export type {
-  OnPlusClick,
-  OnAudioUpload,
-  ModalStatus,
+  OnGridClick,
+  OnSoundSave,
+  SoundModalStatus,
   GridInfo,
-  UploadedAudioInfo,
-  OnAudioDelete,
+  SavedSound,
+  OnSoundDelete,
 };

@@ -2,22 +2,22 @@ import { FC } from "react";
 import { GridContainer, UploadButton } from "./soundGridForCreator.styles";
 import {
   GridInfo,
-  OnPlusClick,
-  UploadedAudioInfo,
+  OnGridClick,
+  SavedSound,
 } from "../soundLayer/soundLayer.component";
 
-interface SoundGridForCreatorProps {
+interface GridForSoundCreatorProps {
   showGrid?: boolean;
   gridPosition: GridInfo;
-  onPlusClick: OnPlusClick;
+  onGridClick: OnGridClick;
   index: number;
-  uploadedAudio?: UploadedAudioInfo;
+  savedSound?: SavedSound;
 }
 
-const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
+const GridForSoundCreator: FC<GridForSoundCreatorProps> = ({
   showGrid = false,
   gridPosition,
-  onPlusClick,
+  onGridClick,
   index,
   children,
 }) => {
@@ -28,7 +28,7 @@ const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
       ) : (
         <UploadButton
           onClick={() => {
-            onPlusClick(gridPosition, index);
+            onGridClick(gridPosition, index);
           }}
         >
           +
@@ -38,4 +38,4 @@ const SoundGridForCreator: FC<SoundGridForCreatorProps> = ({
   );
 };
 
-export { SoundGridForCreator };
+export { GridForSoundCreator };

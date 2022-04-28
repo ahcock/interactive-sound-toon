@@ -20,16 +20,16 @@ import {
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
 import {
-  ModalStatus,
-  OnAudioDelete,
-  OnAudioUpload,
+  SoundModalStatus,
+  OnSoundDelete,
+  OnSoundSave,
 } from "../soundLayer/soundLayer.component";
 
 interface FileUploadModalComponentProps {
-  setModalStatus: Dispatch<SetStateAction<ModalStatus>>;
-  modalStatus: ModalStatus;
-  onSoundUpload: OnAudioUpload;
-  onAudioDelete: OnAudioDelete;
+  setModalStatus: Dispatch<SetStateAction<SoundModalStatus>>;
+  modalStatus: SoundModalStatus;
+  onSoundUpload: OnSoundSave;
+  onAudioDelete: OnSoundDelete;
 }
 
 const FileUploadModal: FC<FileUploadModalComponentProps> = ({
@@ -49,10 +49,10 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
   const [isUploadDisabled, setIsUploadDisabled] = useState(false);
 
   useEffect(function setInitialValue() {
-    const { uploadedAudio } = modalStatus;
+    const { savedSound } = modalStatus;
 
-    if (uploadedAudio) {
-      const { name, file } = uploadedAudio;
+    if (savedSound) {
+      const { name, file } = savedSound;
       setInputValue({
         soundTitle: name,
         soundFile: file,
