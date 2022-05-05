@@ -15,7 +15,6 @@ export const ModalBody = styled.section`
   min-width: 40%;
   min-height: 45%;
   max-width: 500px;
-  max-height: 400px;
   background-color: rgb(255, 255, 255);
   border-radius: 25px;
   display: flex;
@@ -63,6 +62,7 @@ export const FileUploaderLabel = styled.label`
 
 export const ButtonContainer = styled.div`
   margin-top: 20px;
+  padding-bottom: 20px;
   display: flex;
   justify-content: flex-end;
   gap: 4px;
@@ -85,4 +85,12 @@ export const DeleteButtonContainer = styled.span`
   display: flex;
   align-items: center;
   cursor: pointer;
+`;
+
+export const VolumeSlider = styled.input`
+  background-color: gainsboro;
+`;
+
+export const SoundReviewer = styled.audio`
+  margin-top: 10px;
 `;

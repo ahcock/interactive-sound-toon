@@ -2,12 +2,14 @@ import {
   ChangeEvent,
   Dispatch,
   FC,
+  FormEvent,
   SetStateAction,
   useEffect,
   useState,
 } from "react";
 import {
   ButtonContainer,
+  DeleteButtonContainer,
   FileUploaderButton,
   FileUploaderLabel,
   ModalBackground,
@@ -15,14 +17,14 @@ import {
   ModalInputForm,
   ModalTitle,
   SoundNameInput,
+  SoundReviewer,
   Subtitle,
-  DeleteButtonContainer,
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
 import {
-  SoundModalStatus,
   OnSoundDelete,
   OnSoundSave,
+  SoundModalStatus,
 } from "../soundLayer/soundLayer.component";
 
 interface FileUploadModalComponentProps {
@@ -46,7 +48,21 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
     soundFile: null,
   });
 
-  const [isUploadDisabled, setIsUploadDisabled] = useState(false);
+  const [soundSrc, setSoundSrc] = useState("");
+
+  //TODO: 어쩌면 setVolume은 리렌더가 필요하지 않으니 useRef로의 사용을 고려해 봐야 할 수도
+  const [volume, setVolume] = useState(5);
+
+  const [isSaveDisabled, setIsSaveDisabled] = useState(false);
+
+  useEffect(
+    function setUploadButtonStatus() {
+      !!inputValue.soundFile && !!inputValue.soundTitle
+        ? setIsSaveDisabled(false)
+        : setIsSaveDisabled(true);
+    },
+    [inputValue]
+  );
 
   useEffect(function setInitialValue() {
     const { savedSound } = modalStatus;
@@ -57,36 +73,41 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
         soundTitle: name,
         soundFile: file,
       });
-    }
-    setIsUploadDisabled(true);
-  }, []);
 
-  useEffect(
-    function setUploadButtonStatus() {
-      !!inputValue.soundFile && !!inputValue.soundTitle
-        ? setIsUploadDisabled(false)
-        : setIsUploadDisabled(true);
-    },
-    [inputValue]
-  );
+      const soundSrcUrl = URL.createObjectURL(file);
+      setSoundSrc(soundSrcUrl);
+
+      return () => {
+        URL.revokeObjectURL(soundSrcUrl);
+      };
+    }
+
+    setIsSaveDisabled(true);
+  }, []);
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
     setInputValue({ ...inputValue, [name]: !!files ? files[0] : value });
   };
 
+  const onSaveHandler = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const { soundTitle, soundFile } = e.currentTarget;
+
+    if (!soundFile.files[0]) {
+      setModalStatus({ ...modalStatus, isModalOpen: false });
+      return;
+    }
+
+    onSoundUpload(soundTitle.value, soundFile.files[0]);
+    setModalStatus({ ...modalStatus, isModalOpen: false });
+  };
+
   return (
     <ModalBackground>
       <ModalBody onClick={(e) => e.stopPropagation()}>
-        <ModalTitle>Create Sound</ModalTitle>
-        <ModalInputForm
-          onSubmit={(e) => {
-            e.preventDefault();
-            const { soundTitle, soundFile } = e.currentTarget;
-            onSoundUpload(soundTitle.value, soundFile.files[0]);
-            setModalStatus({ ...modalStatus, isModalOpen: false });
-          }}
-        >
+        <ModalTitle>{soundSrc ? "Edit Sound" : "Create Sound"} </ModalTitle>
+        <ModalInputForm onSubmit={onSaveHandler}>
           <SoundNameInput
             autoFocus
             placeholder="Sound Name"
@@ -98,7 +119,6 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
             value={inputValue.soundTitle}
             onChange={onChangeHandler}
           />
-          {/*{TODO: 오디오가 등록된 파일을 누르면 모달이 뜨며 디펄트 값을 지정해줘야함}*/}
           <Subtitle>Sound File</Subtitle>
           <input
             id="file-uploader"
@@ -106,13 +126,23 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
             accept="*"
             hidden
             name="soundFile"
-            // value={inputValue.soundFile && inputValue.soundFile}
             onChange={onChangeHandler}
           />
           <FileUploaderLabel htmlFor="file-uploader">
             <p>{inputValue.soundFile?.name}</p>
             <UploadIcon width={24} height={24} fill="grey" />
           </FileUploaderLabel>
+
+          {soundSrc && (
+            <div>
+              <Subtitle>Sound File</Subtitle>
+              <SoundReviewer
+                controls
+                src={soundSrc}
+                onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
+              />
+            </div>
+          )}
 
           <ButtonContainer>
             <DeleteButtonContainer>
@@ -126,7 +156,7 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
                 Delete
               </FileUploaderButton>
             </DeleteButtonContainer>
-            <FileUploaderButton type="submit" disabled={isUploadDisabled}>
+            <FileUploaderButton type="submit" disabled={isSaveDisabled}>
               Save
             </FileUploaderButton>
             <FileUploaderButton
