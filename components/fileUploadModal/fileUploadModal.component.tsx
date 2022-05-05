@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   ButtonContainer,
+  DeleteButtonContainer,
   FileUploaderButton,
   FileUploaderLabel,
   ModalBackground,
@@ -16,15 +17,14 @@ import {
   ModalInputForm,
   ModalTitle,
   SoundNameInput,
+  SoundReviewer,
   Subtitle,
-  DeleteButtonContainer,
-  VolumeSlider,
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
 import {
-  SoundModalStatus,
   OnSoundDelete,
   OnSoundSave,
+  SoundModalStatus,
 } from "../soundLayer/soundLayer.component";
 
 interface FileUploadModalComponentProps {
@@ -48,6 +48,9 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
     soundFile: null,
   });
 
+  const [soundSrc, setSoundSrc] = useState("");
+
+  //TODO: 어쩌면 setVolume은 리렌더가 필요하지 않으니 useRef로의 사용을 고려해 봐야 할 수도
   const [volume, setVolume] = useState(5);
 
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
@@ -70,6 +73,13 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
         soundTitle: name,
         soundFile: file,
       });
+
+      const soundSrcUrl = URL.createObjectURL(file);
+      setSoundSrc(soundSrcUrl);
+
+      return () => {
+        URL.revokeObjectURL(soundSrcUrl);
+      };
     }
 
     setIsSaveDisabled(true);
@@ -96,7 +106,7 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
   return (
     <ModalBackground>
       <ModalBody onClick={(e) => e.stopPropagation()}>
-        <ModalTitle>Create Sound</ModalTitle>
+        <ModalTitle>{soundSrc ? "Edit Sound" : "Create Sound"} </ModalTitle>
         <ModalInputForm onSubmit={onSaveHandler}>
           <SoundNameInput
             autoFocus
@@ -123,14 +133,16 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
             <UploadIcon width={24} height={24} fill="grey" />
           </FileUploaderLabel>
 
-          <VolumeSlider
-            type="range"
-            min={0}
-            max={1}
-            step={0.02}
-            value={volume}
-            onChange={(e) => setVolume(e.target.valueAsNumber)}
-          />
+          {soundSrc && (
+            <div>
+              <Subtitle>Sound File</Subtitle>
+              <SoundReviewer
+                controls
+                src={soundSrc}
+                onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
+              />
+            </div>
+          )}
 
           <ButtonContainer>
             <DeleteButtonContainer>
