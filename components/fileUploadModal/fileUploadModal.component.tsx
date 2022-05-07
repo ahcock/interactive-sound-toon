@@ -77,13 +77,25 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
       const soundSrcUrl = URL.createObjectURL(file);
       setSoundSrc(soundSrcUrl);
 
-      return () => {
-        URL.revokeObjectURL(soundSrcUrl);
-      };
+      return;
+    }
+    setIsSaveDisabled(true);
+
+    return () => {
+      URL.revokeObjectURL(soundSrc);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!!inputValue.soundFile) {
+      const soundSrcUrl = URL.createObjectURL(inputValue.soundFile);
+      setSoundSrc(soundSrcUrl);
     }
 
-    setIsSaveDisabled(true);
-  }, []);
+    return () => {
+      URL.revokeObjectURL(soundSrc);
+    };
+  }, [inputValue.soundFile]);
 
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
@@ -95,6 +107,9 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
     const { soundTitle, soundFile } = e.currentTarget;
 
     if (!soundFile.files[0]) {
+      if (modalStatus.savedSound?.name !== inputValue.soundTitle) {
+        onSoundUpload(soundTitle.value);
+      }
       setModalStatus({ ...modalStatus, isModalOpen: false });
       return;
     }

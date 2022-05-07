@@ -22,7 +22,11 @@ type OnSavedSoundClick = (
   savedSound: SavedSound
 ) => void;
 
-type OnSoundSave = (title: string, file: File, savedSound?: SavedSound) => void;
+type OnSoundSave = (
+  title: string,
+  file?: File,
+  savedSound?: SavedSound
+) => void;
 
 type OnSoundDelete = (gridPosition: GridInfo) => void;
 
@@ -157,38 +161,49 @@ const SoundLayer: FC<SoundLayerProps> = ({
   };
 
   const onSoundSave: OnSoundSave = (title, file) => {
-    const audioUrl = URL.createObjectURL(file);
+    if (!!file) {
+      const audioUrl = URL.createObjectURL(file);
 
-    //TODO: 이중에 서버로 올라가야 할 것
-    // index: number,
-    // gridPosition: {
-    //   column: string;
-    //   row: string;
-    // }
-    // audioInfo: {title: string, src: string;}
+      //TODO: 이중에 서버로 올라가야 할 것
+      // index: number,
+      // gridPosition: {
+      //   column: string;
+      //   row: string;
+      // }
+      // audioInfo: {title: string, src: string;}
 
-    const gridDataWithSound: SoundGridData = {
-      index: soundModalStatus.clickedGridIndex,
-      key: title + file.name,
-      gridPosition: soundModalStatus.modalOpenedGridPosition,
-      showGrid: true,
-      onGridClick: onGridClick,
-      soundInfo: {
-        title: title,
-        src: audioUrl,
-        key: audioUrl,
-        onSoundContainerClick: () =>
-          onSavedSoundClick(
-            soundModalStatus.modalOpenedGridPosition,
-            soundModalStatus.clickedGridIndex,
-            { name: title, file }
-          ),
-      },
-    };
+      const gridDataWithSound: SoundGridData = {
+        index: soundModalStatus.clickedGridIndex,
+        key: title + file.name,
+        gridPosition: soundModalStatus.modalOpenedGridPosition,
+        showGrid: true,
+        onGridClick: onGridClick,
+        soundInfo: {
+          title: title,
+          src: audioUrl,
+          key: audioUrl,
+          onSoundContainerClick: () =>
+            onSavedSoundClick(
+              soundModalStatus.modalOpenedGridPosition,
+              soundModalStatus.clickedGridIndex,
+              { name: title, file }
+            ),
+        },
+      };
 
-    if (!!soundGridData) {
+      if (!!soundGridData) {
+        const newSoundGridData = [...soundGridData];
+        newSoundGridData[soundModalStatus.clickedGridIndex] = gridDataWithSound;
+        setSoundGridData(newSoundGridData);
+      }
+      return;
+    }
+
+    const clickedGridData = soundGridData[soundModalStatus.clickedGridIndex];
+    if (!!soundGridData && clickedGridData.soundInfo) {
+      clickedGridData.soundInfo.title = title;
       const newSoundGridData = [...soundGridData];
-      newSoundGridData[soundModalStatus.clickedGridIndex] = gridDataWithSound;
+      newSoundGridData[soundModalStatus.clickedGridIndex] = clickedGridData;
       setSoundGridData(newSoundGridData);
     }
   };
