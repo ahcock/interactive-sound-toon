@@ -150,7 +150,7 @@ const FileUploadModal: FC<FileUploadModalComponentProps> = ({
 
           {soundSrc && (
             <div>
-              <Subtitle>Sound File</Subtitle>
+              <Subtitle>Sound review & Set Volume </Subtitle>
               <SoundReviewer
                 controls
                 src={soundSrc}
