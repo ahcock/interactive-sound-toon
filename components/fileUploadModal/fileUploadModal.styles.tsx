@@ -29,7 +29,7 @@ export const ModalTitle = styled.h3`
 export const ModalInputForm = styled.form``;
 
 export const SoundNameInput = styled.input`
-  margin-top: 45px;
+  margin-top: 10px;
   padding-bottom: 10px;
   border: none;
   width: 100%;
@@ -93,4 +93,8 @@ export const VolumeSlider = styled.input`
 
 export const SoundReviewer = styled.audio`
   margin-top: 10px;
+`;
+
+export const AdditionalEventSelect = styled.select`
+  width: 100%;
 `;
