@@ -28,6 +28,10 @@ import {
   SoundModalStatus,
   SoundRefs,
 } from "../soundLayer/soundLayer.component";
+import {
+  AdditionalEventButton,
+  AdditionalEventButtonGroup,
+} from "../soundLayer/soundLayer.styles";
 
 interface SoundSaveModalProps {
   setModalStatus: Dispatch<SetStateAction<SoundModalStatus>>;
@@ -223,6 +227,10 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
               </AdditionalEventSelect>
 
               <Subtitle>Sound Action</Subtitle>
+              <AdditionalEventButtonGroup>
+                <AdditionalEventButton>Play</AdditionalEventButton>
+                <AdditionalEventButton>Stop</AdditionalEventButton>
+              </AdditionalEventButtonGroup>
               {/*Todo: 여러가지 액션들 버튼 or 셀렉트로 만들기*/}
               {soundSrc && (
                 <div>

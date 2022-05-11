@@ -49,3 +49,13 @@ export const StyledAudio = styled.audio`
   //  display: none;
   //}
 `;
+
+export const AdditionalEventButtonGroup = styled.div`
+  display: flex;
+  gap: 4px;
+`;
+
+export const AdditionalEventButton = styled.button`
+  width: 200px;
+  height: 100px;
+`;
