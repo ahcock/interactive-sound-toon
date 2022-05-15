@@ -30,6 +30,8 @@ type OnSoundSave = (
 
 type OnSoundDelete = (gridPosition: GridInfo) => void;
 
+type OnAdditionalEventSave = (soundName: string, action: string) => void;
+
 interface SoundModalStatus {
   isModalOpen: boolean;
   modalOpenedGridPosition: GridInfo;
@@ -231,7 +233,9 @@ const SoundLayer: FC<SoundLayerProps> = ({
     return Object.keys(soundRefs.current);
   };
 
-  const onSoundRefSelect = () => {};
+  const onAdditionalEventSave: OnAdditionalEventSave = (soundName, action) => {
+    console.log(soundName, action);
+  };
 
   return (
     <SoundLayerSection height={height} width={width} show>
@@ -269,6 +273,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
           onSoundUpload={onSoundSave}
           onAudioDelete={onSoundDelete}
           soundRefList={getSoundRefList()}
+          onAdditionalEventSave={onAdditionalEventSave}
         />
       )}
       <button
@@ -294,4 +299,5 @@ export type {
   SavedSound,
   OnSoundDelete,
   SoundRefs,
+  OnAdditionalEventSave,
 };

@@ -50,10 +50,19 @@ export const StyledAudio = styled.audio`
   //}
 `;
 
-export const AdditionalEventButtonGroup = styled.div`
+export const AdditionalEventRadioGroup = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 40px;
 `;
+
+export const RadioInput = styled.input.attrs(() => ({
+  type: "radio",
+  name: "additionalAction",
+}))`
+  width: 40px;
+`;
+
+export const RadioLabel = styled.label``;
 
 export const AdditionalEventButton = styled.button`
   width: 200px;

@@ -68,7 +68,7 @@ export const ButtonContainer = styled.div`
   gap: 4px;
 `;
 
-export const FileUploaderButton = styled.button`
+export const ModalButton = styled.button`
   border-radius: 12px;
   width: 110px;
   height: 40px;

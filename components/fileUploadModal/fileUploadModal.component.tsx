@@ -6,12 +6,13 @@ import {
   SetStateAction,
   useEffect,
   useState,
+  MouseEvent,
 } from "react";
 import {
   AdditionalEventSelect,
   ButtonContainer,
   DeleteButtonContainer,
-  FileUploaderButton,
+  ModalButton,
   FileUploaderLabel,
   ModalBackground,
   ModalBody,
@@ -23,6 +24,7 @@ import {
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
 import {
+  OnAdditionalEventSave,
   OnSoundDelete,
   OnSoundSave,
   SoundModalStatus,
@@ -30,7 +32,9 @@ import {
 } from "../soundLayer/soundLayer.component";
 import {
   AdditionalEventButton,
-  AdditionalEventButtonGroup,
+  AdditionalEventRadioGroup,
+  RadioInput,
+  RadioLabel,
 } from "../soundLayer/soundLayer.styles";
 
 interface SoundSaveModalProps {
@@ -39,6 +43,7 @@ interface SoundSaveModalProps {
   onSoundUpload: OnSoundSave;
   onAudioDelete: OnSoundDelete;
   soundRefList: string[];
+  onAdditionalEventSave: OnAdditionalEventSave;
 }
 
 const SoundSaveModal: FC<SoundSaveModalProps> = ({
@@ -47,6 +52,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
   onSoundUpload,
   onAudioDelete,
   soundRefList,
+  onAdditionalEventSave,
 }) => {
   const [inputValue, setInputValue] = useState<{
     soundTitle: string;
@@ -57,14 +63,12 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
   });
 
   const [isForAdditionalEvent, setIsForAdditionalEvent] = useState(false);
-
   const [soundSrc, setSoundSrc] = useState("");
   console.log(soundRefList);
-
   //TODO: 어쩌면 setVolume은 리렌더가 필요하지 않으니 useRef로의 사용을 고려해 봐야 할 수도
   const [volume, setVolume] = useState(5);
-
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
+  const [selectedSoundName, setSelectedSoundName] = useState("");
 
   useEffect(
     function setUploadButtonStatus() {
@@ -129,6 +133,11 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
     setModalStatus({ ...modalStatus, isModalOpen: false });
   };
 
+  const onActionClickHandler = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log("sound name", modalStatus.savedSound?.name);
+  };
+
   return (
     <ModalBackground>
       <ModalBody onClick={(e) => e.stopPropagation()}>
@@ -183,7 +192,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
 
               <ButtonContainer>
                 <DeleteButtonContainer>
-                  <FileUploaderButton
+                  <ModalButton
                     type="button"
                     onClick={() => {
                       onAudioDelete(modalStatus.modalOpenedGridPosition);
@@ -191,12 +200,12 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
                     }}
                   >
                     Delete
-                  </FileUploaderButton>
+                  </ModalButton>
                 </DeleteButtonContainer>
-                <FileUploaderButton type="submit" disabled={isSaveDisabled}>
+                <ModalButton type="submit" disabled={isSaveDisabled}>
                   Save
-                </FileUploaderButton>
-                <FileUploaderButton
+                </ModalButton>
+                <ModalButton
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -204,7 +213,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
                   }}
                 >
                   Cancel
-                </FileUploaderButton>
+                </ModalButton>
               </ButtonContainer>
             </ModalInputForm>
           </>
@@ -216,9 +225,13 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
             >
               {!isForAdditionalEvent ? "Additional Event" : "Create Sound"}
             </button>
-            <ModalInputForm onSubmit={onSaveHandler}>
+            <ModalInputForm onSubmit={(e) => {}}>
               <Subtitle>Existing Sound</Subtitle>
-              <AdditionalEventSelect>
+              <AdditionalEventSelect
+                onChange={(e) =>
+                  console.log(e.currentTarget.value, "선택된 ref")
+                }
+              >
                 {soundRefList.map((soundName) => (
                   <option key={soundName} value={soundName}>
                     {soundName}
@@ -227,10 +240,23 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
               </AdditionalEventSelect>
 
               <Subtitle>Sound Action</Subtitle>
-              <AdditionalEventButtonGroup>
-                <AdditionalEventButton>Play</AdditionalEventButton>
-                <AdditionalEventButton>Stop</AdditionalEventButton>
-              </AdditionalEventButtonGroup>
+              <AdditionalEventRadioGroup>
+                <RadioInput id="play" value="play" />
+                <RadioLabel htmlFor="play">Play</RadioLabel>
+
+                <RadioInput id="stop" value="stop" />
+                <RadioLabel htmlFor="stop">Stop</RadioLabel>
+
+                <RadioInput id="volumeChange" value="volumeChange" />
+                <RadioLabel htmlFor="volumeChange">VolumeChange</RadioLabel>
+
+                {/*<AdditionalEventButton onClick={onActionClickHandler}>*/}
+                {/*  Play*/}
+                {/*</AdditionalEventButton>*/}
+                {/*<AdditionalEventButton onClick={onActionClickHandler}>*/}
+                {/*  Stop*/}
+                {/*</AdditionalEventButton>*/}
+              </AdditionalEventRadioGroup>
               {/*Todo: 여러가지 액션들 버튼 or 셀렉트로 만들기*/}
               {soundSrc && (
                 <div>
@@ -255,10 +281,10 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
                 {/*    Delete*/}
                 {/*  </FileUploaderButton>*/}
                 {/*</DeleteButtonContainer>*/}
-                <FileUploaderButton type="submit" disabled={isSaveDisabled}>
+                <ModalButton type="submit" disabled={isSaveDisabled}>
                   Save
-                </FileUploaderButton>
-                <FileUploaderButton
+                </ModalButton>
+                <ModalButton
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -266,7 +292,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
                   }}
                 >
                   Cancel
-                </FileUploaderButton>
+                </ModalButton>
               </ButtonContainer>
             </ModalInputForm>
           </>
