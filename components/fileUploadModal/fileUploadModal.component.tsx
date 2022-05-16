@@ -176,9 +176,6 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
                 <UploadIcon width={24} height={24} fill="grey" />
               </FileUploaderLabel>
 
-              {/*<ModalTitle>Additional Event</ModalTitle>*/}
-              {/*<AdditionalEventSelect></AdditionalEventSelect>*/}
-
               {soundSrc && (
                 <div>
                   <Subtitle>Sound review & Set Volume </Subtitle>
@@ -225,9 +222,20 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
             >
               {!isForAdditionalEvent ? "Additional Event" : "Create Sound"}
             </button>
-            <ModalInputForm onSubmit={(e) => {}}>
+            <ModalInputForm
+              onSubmit={(e) => {
+                e.preventDefault();
+                const { existingSound, additionalAction } = e.currentTarget;
+
+                onAdditionalEventSave(
+                  existingSound.value,
+                  additionalAction.value
+                );
+              }}
+            >
               <Subtitle>Existing Sound</Subtitle>
               <AdditionalEventSelect
+                name="existingSound"
                 onChange={(e) =>
                   console.log(e.currentTarget.value, "선택된 ref")
                 }
@@ -241,23 +249,20 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
 
               <Subtitle>Sound Action</Subtitle>
               <AdditionalEventRadioGroup>
-                <RadioInput id="play" value="play" />
-                <RadioLabel htmlFor="play">Play</RadioLabel>
+                <RadioLabel>
+                  Play <RadioInput value="play" />
+                </RadioLabel>
 
-                <RadioInput id="stop" value="stop" />
-                <RadioLabel htmlFor="stop">Stop</RadioLabel>
+                <RadioLabel>
+                  Stop <RadioInput value="stop" />
+                </RadioLabel>
 
-                <RadioInput id="volumeChange" value="volumeChange" />
-                <RadioLabel htmlFor="volumeChange">VolumeChange</RadioLabel>
-
-                {/*<AdditionalEventButton onClick={onActionClickHandler}>*/}
-                {/*  Play*/}
-                {/*</AdditionalEventButton>*/}
-                {/*<AdditionalEventButton onClick={onActionClickHandler}>*/}
-                {/*  Stop*/}
-                {/*</AdditionalEventButton>*/}
+                <RadioLabel>
+                  VolumeChange
+                  <RadioInput value="volumeChange" />
+                </RadioLabel>
               </AdditionalEventRadioGroup>
-              {/*Todo: 여러가지 액션들 버튼 or 셀렉트로 만들기*/}
+
               {soundSrc && (
                 <div>
                   <Subtitle>Sound review & Set Volume </Subtitle>
@@ -270,20 +275,8 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
               )}
 
               <ButtonContainer>
-                {/*<DeleteButtonContainer>*/}
-                {/*  <FileUploaderButton*/}
-                {/*    type="button"*/}
-                {/*    onClick={() => {*/}
-                {/*      onAudioDelete(modalStatus.modalOpenedGridPosition);*/}
-                {/*      setModalStatus({ ...modalStatus, isModalOpen: false });*/}
-                {/*    }}*/}
-                {/*  >*/}
-                {/*    Delete*/}
-                {/*  </FileUploaderButton>*/}
-                {/*</DeleteButtonContainer>*/}
-                <ModalButton type="submit" disabled={isSaveDisabled}>
-                  Save
-                </ModalButton>
+                {/*<ModalButton type="submit" disabled={isSaveDisabled}>*/}
+                <ModalButton type="submit">Save</ModalButton>
                 <ModalButton
                   type="button"
                   onClick={(e) => {

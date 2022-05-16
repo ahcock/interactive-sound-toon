@@ -52,17 +52,22 @@ export const StyledAudio = styled.audio`
 
 export const AdditionalEventRadioGroup = styled.div`
   display: flex;
-  gap: 40px;
+  gap: 30px;
+  align-items: center;
 `;
 
 export const RadioInput = styled.input.attrs(() => ({
   type: "radio",
   name: "additionalAction",
 }))`
-  width: 40px;
+  -webkit-appearance: radio;
 `;
 
-export const RadioLabel = styled.label``;
+export const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
 
 export const AdditionalEventButton = styled.button`
   width: 200px;

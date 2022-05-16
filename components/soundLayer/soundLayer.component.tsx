@@ -122,7 +122,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
               }
             });
           },
-          { root: null, rootMargin: "0px", threshold: 0 }
+          { root: null, rootMargin: "0px", threshold: 0.3 }
         );
 
         if (soundRefs) {
@@ -234,6 +234,8 @@ const SoundLayer: FC<SoundLayerProps> = ({
   };
 
   const onAdditionalEventSave: OnAdditionalEventSave = (soundName, action) => {
+    //TODO: 입력받은 soundName, action으로 soundGridData에 additionalAction이라는 콤포넌트를 만들어 data-soundName-<action>형식으로 추가하기.
+    //TODO: 어쩌면 soundRefs라는 이름을 버리고 보편적 이름을 선택하여, refs뿐만 아니라, additionalAction엘레멘트가 지나갈때 data-soundName-<action> 이름을 인식하여 어떤 사운드 네임의 어떤 액션을 행하도록 IntersectionObserve에서 실행
     console.log(soundName, action);
   };
 
