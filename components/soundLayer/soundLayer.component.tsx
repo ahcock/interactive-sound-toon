@@ -12,7 +12,7 @@ type GridInfo = {
   row: string;
 };
 
-type SavedSound = { name: string; file: File };
+type SavedSound = { name: string; file?: File };
 
 type OnGridClick = (gridInfo: GridInfo, index: number) => void;
 
@@ -57,10 +57,11 @@ interface SoundGridData {
   showGrid: boolean;
   onGridClick: OnGridClick;
   soundInfo?: {
-    src: string;
+    src?: string;
     title: string;
     key: string;
     onSoundContainerClick: () => void;
+    action?: string;
   };
 }
 
@@ -117,8 +118,38 @@ const SoundLayer: FC<SoundLayerProps> = ({
           (entries) => {
             entries.forEach((entry) => {
               const soundName = entry.target.getAttribute("data-name");
-              if (entry.isIntersecting && !!soundName) {
+              const action = entry.target.getAttribute("data-action");
+
+              console.log(soundName, action);
+
+              // if (entry.isIntersecting && !!soundName && action === "stop") {
+              //   soundRefs.current[soundName].pause();
+              //   return;
+              // }
+              if (
+                entry.isIntersecting &&
+                !!action &&
+                !!soundName &&
+                action === "stop" &&
+                soundRefs.current[soundName].currentTime > 0
+              ) {
+                // soundRefs.current[soundName.split("-")[0]].volume = 0.2;
+                // soundRefs.current[soundName.split("-")[0]].volume = 0.1;
+                // soundRefs.current[soundName.split("-")[0]].volume = 0;
+                soundRefs.current[soundName.split("-")[0]].pause();
+                soundRefs.current[soundName.split("-")[0]].currentTime = 0;
+                return;
+              }
+
+              if (
+                entry.isIntersecting &&
+                !!soundName &&
+                soundRefs.current[soundName].currentTime === 0 &&
+                soundRefs.current[soundName].paused
+              ) {
+                console.log("플레잉??");
                 soundRefs.current[soundName].play();
+                return;
               }
             });
           },
@@ -137,7 +168,10 @@ const SoundLayer: FC<SoundLayerProps> = ({
 
   const refCallback = (audioNode: HTMLAudioElement) => {
     if (!!audioNode) {
-      const soundName = audioNode.getAttribute("data-name");
+      const additionalAction = audioNode.getAttribute("data-action");
+      const soundName = additionalAction
+        ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
+        : audioNode.getAttribute("data-name");
 
       if (!!soundName) {
         soundRefs.current[soundName] = audioNode;
@@ -236,7 +270,32 @@ const SoundLayer: FC<SoundLayerProps> = ({
   const onAdditionalEventSave: OnAdditionalEventSave = (soundName, action) => {
     //TODO: 입력받은 soundName, action으로 soundGridData에 additionalAction이라는 콤포넌트를 만들어 data-soundName-<action>형식으로 추가하기.
     //TODO: 어쩌면 soundRefs라는 이름을 버리고 보편적 이름을 선택하여, refs뿐만 아니라, additionalAction엘레멘트가 지나갈때 data-soundName-<action> 이름을 인식하여 어떤 사운드 네임의 어떤 액션을 행하도록 IntersectionObserve에서 실행
-    console.log(soundName, action);
+
+    const gridDataWithSound: SoundGridData = {
+      index: soundModalStatus.clickedGridIndex,
+      key: soundName + action,
+      gridPosition: soundModalStatus.modalOpenedGridPosition,
+      showGrid: true,
+      onGridClick: onGridClick,
+      soundInfo: {
+        action,
+        title: soundName,
+        key: soundName + action,
+        onSoundContainerClick: () =>
+          onSavedSoundClick(
+            soundModalStatus.modalOpenedGridPosition,
+            soundModalStatus.clickedGridIndex,
+            { name: soundName }
+          ),
+      },
+    };
+
+    if (!!soundGridData) {
+      const newSoundGridData = [...soundGridData];
+      newSoundGridData[soundModalStatus.clickedGridIndex] = gridDataWithSound;
+      setSoundGridData(newSoundGridData);
+    }
+    return;
   };
 
   return (
@@ -259,6 +318,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
                 <StyledAudio
                   ref={refCallback}
                   data-name={soundInfo.title}
+                  data-action={soundInfo.action}
                   controls
                 >
                   <source src={soundInfo.src} />
