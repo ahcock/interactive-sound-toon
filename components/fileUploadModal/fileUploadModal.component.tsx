@@ -27,8 +27,8 @@ import {
   OnAdditionalEventSave,
   OnSoundDelete,
   OnSoundSave,
-  SoundModalStatus,
-  SoundRefs,
+  ISoundModalStatus,
+  ISoundRefs,
 } from "../soundLayer/soundLayer.component";
 import {
   AdditionalEventButton,
@@ -38,9 +38,9 @@ import {
 } from "../soundLayer/soundLayer.styles";
 
 interface SoundSaveModalProps {
-  setModalStatus: Dispatch<SetStateAction<SoundModalStatus>>;
-  modalStatus: SoundModalStatus;
-  onSoundUpload: OnSoundSave;
+  setModalStatus: Dispatch<SetStateAction<ISoundModalStatus>>;
+  modalStatus: ISoundModalStatus;
+  onSoundSave: OnSoundSave;
   onAudioDelete: OnSoundDelete;
   soundRefList: string[];
   onAdditionalEventSave: OnAdditionalEventSave;
@@ -49,7 +49,7 @@ interface SoundSaveModalProps {
 const SoundSaveModal: FC<SoundSaveModalProps> = ({
   setModalStatus,
   modalStatus,
-  onSoundUpload,
+  onSoundSave,
   onAudioDelete,
   soundRefList,
   onAdditionalEventSave,
@@ -66,7 +66,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
   const [soundSrc, setSoundSrc] = useState("");
   console.log(soundRefList);
   //TODO: 어쩌면 setVolume은 리렌더가 필요하지 않으니 useRef로의 사용을 고려해 봐야 할 수도
-  const [volume, setVolume] = useState(5);
+  const [volume, setVolume] = useState(1);
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
   const [selectedSoundName, setSelectedSoundName] = useState("");
 
@@ -89,8 +89,10 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
         soundFile: file,
       });
 
-      const soundSrcUrl = URL.createObjectURL(file);
-      setSoundSrc(soundSrcUrl);
+      if (savedSound.file) {
+        const soundSrcUrl = URL.createObjectURL(file);
+        setSoundSrc(soundSrcUrl);
+      }
 
       return;
     }
@@ -123,13 +125,13 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
 
     if (!soundFile.files[0]) {
       if (modalStatus.savedSound?.name !== inputValue.soundTitle) {
-        onSoundUpload(soundTitle.value);
+        onSoundSave(soundTitle.value);
       }
       setModalStatus({ ...modalStatus, isModalOpen: false });
       return;
     }
 
-    onSoundUpload(soundTitle.value, soundFile.files[0]);
+    onSoundSave(soundTitle.value, soundFile.files[0], volume);
     setModalStatus({ ...modalStatus, isModalOpen: false });
   };
 

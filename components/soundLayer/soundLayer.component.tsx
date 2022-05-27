@@ -12,7 +12,7 @@ type GridInfo = {
   row: string;
 };
 
-type SavedSound = { name: string; file?: File };
+type SavedSound = { name: string; file?: File | null };
 
 type OnGridClick = (gridInfo: GridInfo, index: number) => void;
 
@@ -25,6 +25,7 @@ type OnSavedSoundClick = (
 type OnSoundSave = (
   title: string,
   file?: File,
+  volume?: number,
   savedSound?: SavedSound
 ) => void;
 
@@ -32,25 +33,25 @@ type OnSoundDelete = (gridPosition: GridInfo) => void;
 
 type OnAdditionalEventSave = (soundName: string, action: string) => void;
 
-interface SoundModalStatus {
+interface ISoundModalStatus {
   isModalOpen: boolean;
   modalOpenedGridPosition: GridInfo;
   savedSound?: SavedSound;
   clickedGridIndex: number;
 }
 
-interface SoundRefs {
+interface ISoundRefs {
   [key: string]: HTMLAudioElement;
 }
 
-interface SoundLayerProps {
+interface ISoundLayerProps {
   imageLayerDimension: {
     height: number;
     width: number;
   };
 }
 
-interface SoundGridData {
+interface ISoundGridData {
   index: number;
   key: string;
   gridPosition: GridInfo;
@@ -59,6 +60,7 @@ interface SoundGridData {
   soundInfo?: {
     src?: string;
     title: string;
+    volume: number;
     key: string;
     onSoundContainerClick: () => void;
     action?: string;
@@ -72,11 +74,11 @@ interface SoundGridData {
 // TODO: 데이터 베이스 스키마는 어떻게 짤 것인가?
 // TODO: 회차별로 짤 것인가?
 
-const SoundLayer: FC<SoundLayerProps> = ({
+const SoundLayer: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
 }) => {
-  const [soundGridData, setSoundGridData] = useState<SoundGridData[]>([]);
-  const [soundModalStatus, setSoundModalStatus] = useState<SoundModalStatus>({
+  const [soundGridData, setSoundGridData] = useState<ISoundGridData[]>([]);
+  const [soundModalStatus, setSoundModalStatus] = useState<ISoundModalStatus>({
     isModalOpen: false,
     modalOpenedGridPosition: {
       column: "",
@@ -85,16 +87,16 @@ const SoundLayer: FC<SoundLayerProps> = ({
     clickedGridIndex: 0,
   });
 
-  const [savedSoundGridData, setSavedSoundGridData] = useState<SoundGridData[]>(
-    []
-  );
+  const [savedSoundGridData, setSavedSoundGridData] = useState<
+    ISoundGridData[]
+  >([]);
 
-  const soundRefs = useRef<SoundRefs>({});
+  const soundRefs = useRef<ISoundRefs>({});
 
   // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onGridClick. showGrid 빼고
 
   useEffect(function registerSoundGrid() {
-    const soundGridInfo: SoundGridData[] = [];
+    const soundGridInfo: ISoundGridData[] = [];
 
     for (let i = 1; i < 201; i++) {
       for (let j = 1; j < 11; j++) {
@@ -117,15 +119,11 @@ const SoundLayer: FC<SoundLayerProps> = ({
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
+              //TODO: https://bobbyhadz.com/blog/javascript-get-all-attributes-of-element 적용
               const soundName = entry.target.getAttribute("data-name");
               const action = entry.target.getAttribute("data-action");
+              const volume = entry.target.getAttribute("data-volume") || "1";
 
-              console.log(soundName, action);
-
-              // if (entry.isIntersecting && !!soundName && action === "stop") {
-              //   soundRefs.current[soundName].pause();
-              //   return;
-              // }
               if (
                 entry.isIntersecting &&
                 !!action &&
@@ -133,9 +131,12 @@ const SoundLayer: FC<SoundLayerProps> = ({
                 action === "stop" &&
                 soundRefs.current[soundName].currentTime > 0
               ) {
-                // soundRefs.current[soundName.split("-")[0]].volume = 0.2;
-                // soundRefs.current[soundName.split("-")[0]].volume = 0.1;
-                // soundRefs.current[soundName.split("-")[0]].volume = 0;
+                soundRefs.current[soundName.split("-")[0]].volume = 0.5;
+                soundRefs.current[soundName.split("-")[0]].volume = 0.4;
+                soundRefs.current[soundName.split("-")[0]].volume = 0.3;
+                soundRefs.current[soundName.split("-")[0]].volume = 0.2;
+                soundRefs.current[soundName.split("-")[0]].volume = 0.1;
+                soundRefs.current[soundName.split("-")[0]].volume = 0;
                 soundRefs.current[soundName.split("-")[0]].pause();
                 soundRefs.current[soundName.split("-")[0]].currentTime = 0;
                 return;
@@ -144,10 +145,11 @@ const SoundLayer: FC<SoundLayerProps> = ({
               if (
                 entry.isIntersecting &&
                 !!soundName &&
+                action !== "stop" &&
                 soundRefs.current[soundName].currentTime === 0 &&
                 soundRefs.current[soundName].paused
               ) {
-                console.log("플레잉??");
+                soundRefs.current[soundName].volume = parseFloat(volume);
                 soundRefs.current[soundName].play();
                 return;
               }
@@ -200,7 +202,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
     });
   };
 
-  const onSoundSave: OnSoundSave = (title, file) => {
+  const onSoundSave: OnSoundSave = (title, file, volume) => {
     if (!!file) {
       const audioUrl = URL.createObjectURL(file);
 
@@ -212,14 +214,15 @@ const SoundLayer: FC<SoundLayerProps> = ({
       // }
       // audioInfo: {title: string, src: string;}
 
-      const gridDataWithSound: SoundGridData = {
+      const gridDataWithSound: ISoundGridData = {
         index: soundModalStatus.clickedGridIndex,
         key: title + file.name,
         gridPosition: soundModalStatus.modalOpenedGridPosition,
         showGrid: true,
         onGridClick: onGridClick,
         soundInfo: {
-          title: title,
+          title,
+          volume,
           src: audioUrl,
           key: audioUrl,
           onSoundContainerClick: () =>
@@ -271,7 +274,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
     //TODO: 입력받은 soundName, action으로 soundGridData에 additionalAction이라는 콤포넌트를 만들어 data-soundName-<action>형식으로 추가하기.
     //TODO: 어쩌면 soundRefs라는 이름을 버리고 보편적 이름을 선택하여, refs뿐만 아니라, additionalAction엘레멘트가 지나갈때 data-soundName-<action> 이름을 인식하여 어떤 사운드 네임의 어떤 액션을 행하도록 IntersectionObserve에서 실행
 
-    const gridDataWithSound: SoundGridData = {
+    const gridDataWithSound: ISoundGridData = {
       index: soundModalStatus.clickedGridIndex,
       key: soundName + action,
       gridPosition: soundModalStatus.modalOpenedGridPosition,
@@ -281,6 +284,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
         action,
         title: soundName,
         key: soundName + action,
+        volume: 1,
         onSoundContainerClick: () =>
           onSavedSoundClick(
             soundModalStatus.modalOpenedGridPosition,
@@ -319,6 +323,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
                   ref={refCallback}
                   data-name={soundInfo.title}
                   data-action={soundInfo.action}
+                  data-volume={soundInfo.volume}
                   controls
                 >
                   <source src={soundInfo.src} />
@@ -332,7 +337,7 @@ const SoundLayer: FC<SoundLayerProps> = ({
         <SoundSaveModal
           setModalStatus={setSoundModalStatus}
           modalStatus={soundModalStatus}
-          onSoundUpload={onSoundSave}
+          onSoundSave={onSoundSave}
           onAudioDelete={onSoundDelete}
           soundRefList={getSoundRefList()}
           onAdditionalEventSave={onAdditionalEventSave}
@@ -356,10 +361,10 @@ export { SoundLayer };
 export type {
   OnGridClick,
   OnSoundSave,
-  SoundModalStatus,
+  ISoundModalStatus,
   GridInfo,
   SavedSound,
   OnSoundDelete,
-  SoundRefs,
+  ISoundRefs,
   OnAdditionalEventSave,
 };
