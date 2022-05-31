@@ -6,16 +6,15 @@ import {
   SetStateAction,
   useEffect,
   useState,
-  MouseEvent,
 } from "react";
 import {
   AdditionalEventSelect,
   ButtonContainer,
   DeleteButtonContainer,
-  ModalButton,
   FileUploaderLabel,
   ModalBackground,
   ModalBody,
+  ModalButton,
   ModalInputForm,
   ModalTitle,
   SoundNameInput,
@@ -24,20 +23,18 @@ import {
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
 import {
+  ISoundModalStatus,
   OnAdditionalEventSave,
   OnSoundDelete,
   OnSoundSave,
-  ISoundModalStatus,
-  ISoundRefs,
 } from "../soundLayer/soundLayer.component";
 import {
-  AdditionalEventButton,
   AdditionalEventRadioGroup,
   RadioInput,
   RadioLabel,
 } from "../soundLayer/soundLayer.styles";
 
-interface SoundSaveModalProps {
+interface ISoundSaveModalProps {
   setModalStatus: Dispatch<SetStateAction<ISoundModalStatus>>;
   modalStatus: ISoundModalStatus;
   onSoundSave: OnSoundSave;
@@ -46,7 +43,7 @@ interface SoundSaveModalProps {
   onAdditionalEventSave: OnAdditionalEventSave;
 }
 
-const SoundSaveModal: FC<SoundSaveModalProps> = ({
+const SoundSaveModal: FC<ISoundSaveModalProps> = ({
   setModalStatus,
   modalStatus,
   onSoundSave,
@@ -56,7 +53,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState<{
     soundTitle: string;
-    soundFile: File | null;
+    soundFile?: File | null;
   }>({
     soundTitle: "",
     soundFile: null,
@@ -64,11 +61,9 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
 
   const [isForAdditionalEvent, setIsForAdditionalEvent] = useState(false);
   const [soundSrc, setSoundSrc] = useState("");
-  console.log(soundRefList);
   //TODO: 어쩌면 setVolume은 리렌더가 필요하지 않으니 useRef로의 사용을 고려해 봐야 할 수도
   const [volume, setVolume] = useState(1);
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
-  const [selectedSoundName, setSelectedSoundName] = useState("");
 
   useEffect(
     function setUploadButtonStatus() {
@@ -89,7 +84,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
         soundFile: file,
       });
 
-      if (savedSound.file) {
+      if (!!file) {
         const soundSrcUrl = URL.createObjectURL(file);
         setSoundSrc(soundSrcUrl);
       }
@@ -135,11 +130,6 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
     setModalStatus({ ...modalStatus, isModalOpen: false });
   };
 
-  const onActionClickHandler = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    console.log("sound name", modalStatus.savedSound?.name);
-  };
-
   return (
     <ModalBackground>
       <ModalBody onClick={(e) => e.stopPropagation()}>
@@ -149,7 +139,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
             <button
               onClick={() => setIsForAdditionalEvent(!isForAdditionalEvent)}
             >
-              {!isForAdditionalEvent ? "Additional Event" : "Create Sound"}
+              Additional Event
             </button>
             <ModalInputForm onSubmit={onSaveHandler}>
               <Subtitle>Sound Name</Subtitle>
@@ -222,7 +212,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
             <button
               onClick={() => setIsForAdditionalEvent(!isForAdditionalEvent)}
             >
-              {!isForAdditionalEvent ? "Additional Event" : "Create Sound"}
+              Create Sound
             </button>
             <ModalInputForm
               onSubmit={(e) => {
@@ -233,6 +223,7 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
                   existingSound.value,
                   additionalAction.value
                 );
+                setModalStatus({ ...modalStatus, isModalOpen: false });
               }}
             >
               <Subtitle>Existing Sound</Subtitle>
@@ -257,11 +248,6 @@ const SoundSaveModal: FC<SoundSaveModalProps> = ({
 
                 <RadioLabel>
                   Stop <RadioInput value="stop" />
-                </RadioLabel>
-
-                <RadioLabel>
-                  VolumeChange
-                  <RadioInput value="volumeChange" />
                 </RadioLabel>
               </AdditionalEventRadioGroup>
 

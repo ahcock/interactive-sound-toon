@@ -53,15 +53,13 @@ interface ISoundLayerProps {
 
 interface ISoundGridData {
   index: number;
-  key: string;
   gridPosition: GridInfo;
   showGrid: boolean;
   onGridClick: OnGridClick;
   soundInfo?: {
     src?: string;
     title: string;
-    volume: number;
-    key: string;
+    volume?: number;
     onSoundContainerClick: () => void;
     action?: string;
   };
@@ -87,10 +85,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     clickedGridIndex: 0,
   });
 
-  const [savedSoundGridData, setSavedSoundGridData] = useState<
-    ISoundGridData[]
-  >([]);
-
   const soundRefs = useRef<ISoundRefs>({});
 
   // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onGridClick. showGrid 빼고
@@ -102,7 +96,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       for (let j = 1; j < 11; j++) {
         soundGridInfo.push({
           index: soundGridInfo.length,
-          key: `row${i}column${j}`,
           gridPosition: { row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` },
           showGrid: true,
           onGridClick: onGridClick,
@@ -206,7 +199,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     if (!!file) {
       const audioUrl = URL.createObjectURL(file);
 
-      //TODO: 이중에 서버로 올라가야 할 것
+      // TODO: 이중에 서버로 올라가야 할 것
       // index: number,
       // gridPosition: {
       //   column: string;
@@ -216,7 +209,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
       const gridDataWithSound: ISoundGridData = {
         index: soundModalStatus.clickedGridIndex,
-        key: title + file.name,
         gridPosition: soundModalStatus.modalOpenedGridPosition,
         showGrid: true,
         onGridClick: onGridClick,
@@ -224,7 +216,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           title,
           volume,
           src: audioUrl,
-          key: audioUrl,
           onSoundContainerClick: () =>
             onSavedSoundClick(
               soundModalStatus.modalOpenedGridPosition,
@@ -256,7 +247,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       const newSoundGridData = [...soundGridData];
       newSoundGridData[soundModalStatus.clickedGridIndex] = {
         index: soundModalStatus.clickedGridIndex,
-        key: `row${gridPosition.row[0]}column${gridPosition.column[0]}`,
         gridPosition: gridPosition,
         showGrid: true,
         onGridClick: onGridClick,
@@ -271,19 +261,14 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   };
 
   const onAdditionalEventSave: OnAdditionalEventSave = (soundName, action) => {
-    //TODO: 입력받은 soundName, action으로 soundGridData에 additionalAction이라는 콤포넌트를 만들어 data-soundName-<action>형식으로 추가하기.
-    //TODO: 어쩌면 soundRefs라는 이름을 버리고 보편적 이름을 선택하여, refs뿐만 아니라, additionalAction엘레멘트가 지나갈때 data-soundName-<action> 이름을 인식하여 어떤 사운드 네임의 어떤 액션을 행하도록 IntersectionObserve에서 실행
-
     const gridDataWithSound: ISoundGridData = {
       index: soundModalStatus.clickedGridIndex,
-      key: soundName + action,
       gridPosition: soundModalStatus.modalOpenedGridPosition,
       showGrid: true,
       onGridClick: onGridClick,
       soundInfo: {
         action,
         title: soundName,
-        key: soundName + action,
         volume: 1,
         onSoundContainerClick: () =>
           onSavedSoundClick(
@@ -305,13 +290,12 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   return (
     <SoundLayerSection height={height} width={width} show>
       {soundGridData.map((data) => {
-        const { index, key, gridPosition, showGrid, onGridClick, soundInfo } =
-          data;
+        const { index, gridPosition, showGrid, onGridClick, soundInfo } = data;
 
         return (
           <GridForSoundCreator
             index={index}
-            key={key}
+            key={gridPosition.row + gridPosition.column}
             gridPosition={gridPosition}
             showGrid={showGrid}
             onGridClick={onGridClick}
