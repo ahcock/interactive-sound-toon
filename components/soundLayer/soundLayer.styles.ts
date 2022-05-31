@@ -50,9 +50,23 @@ export const StyledAudio = styled.audio`
   //}
 `;
 
-export const AdditionalEventButtonGroup = styled.div`
+export const AdditionalEventRadioGroup = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 30px;
+  align-items: center;
+`;
+
+export const RadioInput = styled.input.attrs(() => ({
+  type: "radio",
+  name: "additionalAction",
+}))`
+  -webkit-appearance: radio;
+`;
+
+export const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 export const AdditionalEventButton = styled.button`
