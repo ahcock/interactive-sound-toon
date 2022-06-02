@@ -6,6 +6,7 @@ import {
 } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../fileUploadModal/fileUploadModal.component";
+import { s3Client } from "../../lib/s3";
 
 type GridInfo = {
   column: string;
@@ -59,11 +60,17 @@ interface ISoundGridData {
   soundInfo?: {
     src?: string;
     title: string;
+    fileName?: string;
     volume?: number;
     onSoundContainerClick: () => void;
     action?: string;
   };
 }
+
+type SavedSoundGridData = Pick<
+  ISoundGridData,
+  "index" | "gridPosition" | "soundInfo"
+> & { soundInfo: { src: File } };
 
 // TODO: 등록된 사운드 어딘가에 저장하기
 // TODO: 저장된 사운드 불러오기, 렌더링 하기
@@ -139,7 +146,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 entry.isIntersecting &&
                 !!soundName &&
                 action !== "stop" &&
-                soundRefs.current[soundName].currentTime === 0 &&
                 soundRefs.current[soundName].paused
               ) {
                 soundRefs.current[soundName].volume = parseFloat(volume);
@@ -215,6 +221,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         soundInfo: {
           title,
           volume,
+          fileName: file.name,
           src: audioUrl,
           onSoundContainerClick: () =>
             onSavedSoundClick(
@@ -328,11 +335,26 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         />
       )}
       <button
-        onClick={() => {
-          fetch("/api/insertAudioInfo", {
-            method: "PUT",
-            body: JSON.stringify(soundGridData),
-          });
+        onClick={async () => {
+          const newData = soundGridData.filter(
+            (gridData) => !!gridData.soundInfo?.src
+          );
+          if (!!newData[0].soundInfo?.src) {
+            newData.forEach(async (data, i) => {
+              const blob = await fetch(data.soundInfo.src).then((src) =>
+                src.blob()
+              );
+              console.log(data.soundInfo?.fileName);
+              fetch(
+                `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
+                {
+                  method: "POST",
+                  body: blob,
+                  headers: new Headers({ "content-type": blob.type }),
+                }
+              );
+            });
+          }
         }}
       >
         업로드
