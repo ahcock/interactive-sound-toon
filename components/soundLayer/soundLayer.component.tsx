@@ -6,6 +6,7 @@ import {
 } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../fileUploadModal/fileUploadModal.component";
+import { s3Client } from "../../lib/s3";
 
 type GridInfo = {
   column: string;
@@ -59,11 +60,17 @@ interface ISoundGridData {
   soundInfo?: {
     src?: string;
     title: string;
+    fileName?: string;
     volume?: number;
     onSoundContainerClick: () => void;
     action?: string;
   };
 }
+
+type SavedSoundGridData = Pick<
+  ISoundGridData,
+  "index" | "gridPosition" | "soundInfo"
+> & { soundInfo: { src: File } };
 
 // TODO: 등록된 사운드 어딘가에 저장하기
 // TODO: 저장된 사운드 불러오기, 렌더링 하기
@@ -139,7 +146,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 entry.isIntersecting &&
                 !!soundName &&
                 action !== "stop" &&
-                soundRefs.current[soundName].currentTime === 0 &&
                 soundRefs.current[soundName].paused
               ) {
                 soundRefs.current[soundName].volume = parseFloat(volume);
@@ -215,6 +221,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         soundInfo: {
           title,
           volume,
+          fileName: file.name,
           src: audioUrl,
           onSoundContainerClick: () =>
             onSavedSoundClick(
@@ -328,11 +335,29 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         />
       )}
       <button
-        onClick={() => {
-          fetch("/api/insertAudioInfo", {
-            method: "PUT",
-            body: JSON.stringify(soundGridData),
-          });
+        onClick={async () => {
+          const newData = soundGridData.filter(
+            (gridData) => !!gridData.soundInfo?.src
+          );
+          //여기서 필터된 걸 가지고 MongoDb에 올려야할 정보를 만들어야 됨.
+          // S3에 올라간 오디오 Url 포함
+          if (!!newData[0].soundInfo?.src) {
+            newData.forEach(async (data, i) => {
+              const blob = await fetch(data.soundInfo.src).then((src) =>
+                src.blob()
+              );
+              fetch(
+                `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
+                {
+                  method: "POST",
+                  body: blob,
+                  headers: new Headers({ "content-type": blob.type }),
+                }
+              );
+              // 이 forEach안에서 사운드 하나하나 업로드 하면 mongoDB에 들어갈 정보를 또다른 배열에 담고
+              // 이 forEach가 끝나면 그 다음 몽고DB에 데이터를 업로드 해야 하는가?
+            });
+          }
         }}
       >
         업로드
