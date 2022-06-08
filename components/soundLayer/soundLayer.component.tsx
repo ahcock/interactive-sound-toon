@@ -91,10 +91,21 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     },
     clickedGridIndex: 0,
   });
+  //
+  // const [audioContext, setAudioContext] = useState<AudioContext>();
+  const [audioAPITracks, setAudioAPITracks] = useState<{
+    [key: string]: MediaElementAudioSourceNode;
+  }>({});
+
+  const audioContext = new AudioContext();
 
   const soundRefs = useRef<ISoundRefs>({});
 
   // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onGridClick. showGrid 빼고
+
+  // useEffect(function initializeAudioContext() {
+  //   setAudioContext(new AudioContext());
+  // }, []);
 
   useEffect(function registerSoundGrid() {
     const soundGridInfo: ISoundGridData[] = [];
@@ -131,11 +142,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 action === "stop" &&
                 soundRefs.current[soundName].currentTime > 0
               ) {
-                soundRefs.current[soundName.split("-")[0]].volume = 0.5;
-                soundRefs.current[soundName.split("-")[0]].volume = 0.4;
-                soundRefs.current[soundName.split("-")[0]].volume = 0.3;
-                soundRefs.current[soundName.split("-")[0]].volume = 0.2;
-                soundRefs.current[soundName.split("-")[0]].volume = 0.1;
                 soundRefs.current[soundName.split("-")[0]].volume = 0;
                 soundRefs.current[soundName.split("-")[0]].pause();
                 soundRefs.current[soundName.split("-")[0]].currentTime = 0;
@@ -174,8 +180,24 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
         : audioNode.getAttribute("data-name");
 
-      if (!!soundName) {
+      if (!!soundName && !audioAPITracks[soundName]) {
         soundRefs.current[soundName] = audioNode;
+
+        // make new audio context for Web Audio API
+        const track = audioContext.createMediaElementSource(
+          soundRefs.current[soundName]
+        );
+
+        const eq = audioContext.createBiquadFilter();
+        eq.type = "lowpass";
+        eq.frequency.value = 200;
+
+        track.connect(eq).connect(audioContext.destination);
+
+        setAudioAPITracks({
+          ...audioAPITracks,
+          [soundName]: track,
+        });
       }
     }
   };
@@ -335,30 +357,30 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         />
       )}
       <button
-        onClick={async () => {
-          const newData = soundGridData.filter(
-            (gridData) => !!gridData.soundInfo?.src
-          );
-          //여기서 필터된 걸 가지고 MongoDb에 올려야할 정보를 만들어야 됨.
-          // S3에 올라간 오디오 Url 포함
-          if (!!newData[0].soundInfo?.src) {
-            newData.forEach(async (data, i) => {
-              const blob = await fetch(data.soundInfo.src).then((src) =>
-                src.blob()
-              );
-              fetch(
-                `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
-                {
-                  method: "POST",
-                  body: blob,
-                  headers: new Headers({ "content-type": blob.type }),
-                }
-              );
-              // 이 forEach안에서 사운드 하나하나 업로드 하면 mongoDB에 들어갈 정보를 또다른 배열에 담고
-              // 이 forEach가 끝나면 그 다음 몽고DB에 데이터를 업로드 해야 하는가?
-            });
-          }
-        }}
+      // onClick={async () => {
+      //   const newData = soundGridData.filter(
+      //     (gridData) => !!gridData.soundInfo?.src
+      //   );
+      //   //여기서 필터된 걸 가지고 MongoDb에 올려야할 정보를 만들어야 됨.
+      //   // S3에 올라간 오디오 Url 포함
+      //   if (!!newData[0].soundInfo?.src) {
+      //     newData.forEach(async (data, i) => {
+      //       const blob = await fetch(data.soundInfo.src).then((src) =>
+      //         src.blob()
+      //       );
+      //       fetch(
+      //         `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
+      //         {
+      //           method: "POST",
+      //           body: blob,
+      //           headers: new Headers({ "content-type": blob.type }),
+      //         }
+      //       );
+      //       // 이 forEach안에서 사운드 하나하나 업로드 하면 mongoDB에 들어갈 정보를 또다른 배열에 담고
+      //       // 이 forEach가 끝나면 그 다음 몽고DB에 데이터를 업로드 해야 하는가?
+      //     });
+      //   }
+      // }}
       >
         업로드
       </button>
