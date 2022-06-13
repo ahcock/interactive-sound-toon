@@ -4,6 +4,10 @@ const GlobalStyle = createGlobalStyle`
   :root {
     --primary-mixer: rgb(30,29,32);
     --primary-channel-strip: rgb(38,37,41);
+    --essential-primary: #9b7ae7;
+    --background-base: #1e1d20;
+    --essential-subdued: #7f7b87;
+    
     
     
   }
