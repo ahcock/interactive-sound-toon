@@ -5,8 +5,9 @@ import {
   StyledAudio,
 } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
-import { SoundSaveModal } from "../fileUploadModal/fileUploadModal.component";
-import { s3Client } from "../../lib/s3";
+import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
+import { s3Client } from "../../../lib/s3";
+import { SoundMixer } from "../soundMixer/soundMixer.component";
 
 type GridInfo = {
   column: string;
@@ -384,6 +385,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       >
         업로드
       </button>
+
+      <SoundMixer />
     </SoundLayerSection>
   );
 };
