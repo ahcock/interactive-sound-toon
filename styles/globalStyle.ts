@@ -1,6 +1,13 @@
 import { createGlobalStyle } from "styled-components";
 
-const GlobalStyleReset = createGlobalStyle` 
+const GlobalStyle = createGlobalStyle` 
+  :root {
+    --primary-mixer: rgb(30,29,32);
+    --primary-channel-strip: rgb(38,37,41);
+    
+    
+  }
+  
   html {
     -webkit-text-size-adjust: 100%;
   }
@@ -197,4 +204,4 @@ const GlobalStyleReset = createGlobalStyle`
   }
 `;
 
-export { GlobalStyleReset };
+export { GlobalStyle };

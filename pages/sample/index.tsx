@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { PageContainer } from "./samplePageIndex.styles";
-import { SoundLayer } from "../../components/soundLayer/soundLayer.component";
+import { SoundLayer } from "../../components/soundPart/soundLayer/soundLayer.component";
 import ImageLayer from "../../components/imageLayer/imageLayer.component";
 import clientPromise from "../../lib/mongodb";
 

@@ -27,12 +27,12 @@ import {
   OnAdditionalEventSave,
   OnSoundDelete,
   OnSoundSave,
-} from "../soundLayer/soundLayer.component";
+} from "../soundPart/soundLayer/soundLayer.component";
 import {
   AdditionalEventRadioGroup,
   RadioInput,
   RadioLabel,
-} from "../soundLayer/soundLayer.styles";
+} from "../soundPart/soundLayer/soundLayer.styles";
 
 interface ISoundSaveModalProps {
   setModalStatus: Dispatch<SetStateAction<ISoundModalStatus>>;
