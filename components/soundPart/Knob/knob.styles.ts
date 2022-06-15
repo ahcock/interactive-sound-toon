@@ -7,6 +7,7 @@ export const KnobContainer = styled.div`
   height: 20px;
   cursor: ns-resize;
   -webkit-user-drag: none;
+  user-select: none;
 `;
 
 export const KnobBody = styled.div`
@@ -19,7 +20,7 @@ export const KnobBody = styled.div`
   top: 4px;
 `;
 
-export const KnobPointer = styled.div`
+export const KnobPointer = styled.div<{ knobDeg: number }>`
   position: absolute;
   top: 3px;
   left: 11px;
@@ -27,5 +28,6 @@ export const KnobPointer = styled.div`
   height: 24px;
   //background-color: rgb(155, 122, 231);
   border-top: 12px solid white;
-  transform: rotate(80deg);
+
+  transform: ${({ knobDeg }) => `rotate(${knobDeg}deg)`};
 `;

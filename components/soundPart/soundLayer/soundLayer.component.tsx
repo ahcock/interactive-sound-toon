@@ -386,7 +386,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         업로드
       </button>
 
-      <SoundMixer />
+      {/*<SoundMixer />*/}
     </SoundLayerSection>
   );
 };
