@@ -6,8 +6,6 @@ import {
 } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
-import { s3Client } from "../../../lib/s3";
-import { SoundMixer } from "../soundMixer/soundMixer.component";
 
 type GridInfo = {
   column: string;
@@ -94,8 +92,18 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   });
   //
   // const [audioContext, setAudioContext] = useState<AudioContext>();
-  const [audioAPITracks, setAudioAPITracks] = useState<{
-    [key: string]: MediaElementAudioSourceNode;
+  // const [audioAPITracks, setAudioAPITracks] = useState<{
+  //   [key: string]: {
+  //     track: MediaElementAudioSourceNode;
+  //     gainNode: GainNode;
+  //   };
+  // }>({});
+
+  const audioAPITracks = useRef<{
+    [key: string]: {
+      track: MediaElementAudioSourceNode;
+      gainNode: GainNode;
+    };
   }>({});
 
   const audioContext = new AudioContext();
@@ -155,7 +163,9 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 action !== "stop" &&
                 soundRefs.current[soundName].paused
               ) {
-                soundRefs.current[soundName].volume = parseFloat(volume);
+                audioAPITracks.current[soundName].gainNode.gain.value =
+                  parseFloat(`${volume}` ?? "1");
+                // soundRefs.current[soundName].volume = parseFloat(volume);
                 soundRefs.current[soundName].play();
                 return;
               }
@@ -181,7 +191,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
         : audioNode.getAttribute("data-name");
 
-      if (!!soundName && !audioAPITracks[soundName]) {
+      if (!!soundName && !audioAPITracks.current[soundName]) {
         soundRefs.current[soundName] = audioNode;
 
         // make new audio context for Web Audio API
@@ -189,19 +199,35 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           soundRefs.current[soundName]
         );
 
-        const eq = audioContext.createBiquadFilter();
-        eq.type = "lowpass";
-        eq.frequency.value = 200;
+        const gainNode = audioContext.createGain();
 
-        track.connect(eq).connect(audioContext.destination);
+        // const eq = audioContext.createBiquadFilter();
+        // eq.type = "lowpass";
+        // eq.frequency.value = 200;
+        //
 
-        setAudioAPITracks({
-          ...audioAPITracks,
-          [soundName]: track,
-        });
+        track.connect(gainNode).connect(audioContext.destination);
+
+        audioAPITracks.current = {
+          ...audioAPITracks.current,
+          [soundName]: {
+            track,
+            gainNode,
+          },
+        };
+
+        // setAudioAPITracks({
+        //   ...audioAPITracks,
+        //   [soundName]: {
+        //     track,
+        //     gainNode,
+        //   },
+        // });
       }
     }
   };
+
+  console.log(audioAPITracks);
 
   const onGridClick: OnGridClick = (gridInfo, index) => {
     setSoundModalStatus({
@@ -226,6 +252,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   const onSoundSave: OnSoundSave = (title, file, volume) => {
     if (!!file) {
+      console.log("온 세이브 먼저");
       const audioUrl = URL.createObjectURL(file);
 
       // TODO: 이중에 서버로 올라가야 할 것
@@ -358,35 +385,35 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         />
       )}
       <button
-      // onClick={async () => {
-      //   const newData = soundGridData.filter(
-      //     (gridData) => !!gridData.soundInfo?.src
-      //   );
-      //   //여기서 필터된 걸 가지고 MongoDb에 올려야할 정보를 만들어야 됨.
-      //   // S3에 올라간 오디오 Url 포함
-      //   if (!!newData[0].soundInfo?.src) {
-      //     newData.forEach(async (data, i) => {
-      //       const blob = await fetch(data.soundInfo.src).then((src) =>
-      //         src.blob()
-      //       );
-      //       fetch(
-      //         `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
-      //         {
-      //           method: "POST",
-      //           body: blob,
-      //           headers: new Headers({ "content-type": blob.type }),
-      //         }
-      //       );
-      //       // 이 forEach안에서 사운드 하나하나 업로드 하면 mongoDB에 들어갈 정보를 또다른 배열에 담고
-      //       // 이 forEach가 끝나면 그 다음 몽고DB에 데이터를 업로드 해야 하는가?
-      //     });
-      //   }
-      // }}
+        onClick={async () => {
+          const newData = soundGridData.filter(
+            (gridData) => !!gridData.soundInfo?.src
+          );
+          //여기서 필터된 걸 가지고 MongoDb에 올려야할 정보를 만들어야 됨.
+          // S3에 올라간 오디오 Url 포함
+          if (!!newData) {
+            for (const data of newData) {
+              if (!!data.soundInfo && !!data.soundInfo.src) {
+                const blob = await fetch(data.soundInfo.src).then((src) =>
+                  src.blob()
+                );
+                await fetch(
+                  `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
+                  {
+                    method: "POST",
+                    body: blob,
+                    headers: new Headers({ "content-type": blob.type }),
+                  }
+                );
+                // 이 forEach안에서 사운드 하나하나 업로드 하면 mongoDB에 들어갈 정보를 또다른 배열에 담고
+                // 이 forEach가 끝나면 그 다음 몽고DB에 데이터를 업로드 해야 하는가?
+              }
+            }
+          }
+        }}
       >
         업로드
       </button>
-
-      <SoundMixer />
     </SoundLayerSection>
   );
 };
