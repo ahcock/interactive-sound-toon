@@ -158,7 +158,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 soundRefs.current[soundName].paused
               ) {
                 audioAPITracks.current[soundName].gainNode.gain.value =
-                  parseFloat(`${volume}` ?? "1");
+                  parseFloat(!!volume ? `${volume}` : "1");
                 // soundRefs.current[soundName].volume = parseFloat(volume);
                 soundRefs.current[soundName].play();
               }
