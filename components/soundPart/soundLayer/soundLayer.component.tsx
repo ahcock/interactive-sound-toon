@@ -248,14 +248,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       console.log("온 세이브 먼저");
       const audioUrl = URL.createObjectURL(file);
 
-      // TODO: 이중에 서버로 올라가야 할 것
-      // index: number,
-      // gridPosition: {
-      //   column: string;
-      //   row: string;
-      // }
-      // audioInfo: {title: string, src: string;}
-
       const gridDataWithSound: ISoundGridData = {
         index: soundModalStatus.clickedGridIndex,
         gridPosition: soundModalStatus.modalOpenedGridPosition,
@@ -412,6 +404,24 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
             // s3에 업로드된 파일들의 위치
             console.log(uploadedLocations);
+
+            // TODO: 여기서 이제 몽고DB에 데이터를 올려야 함. nextAPI를 이용해 올릴 것. audioInfo를 먼저 배열에 만든 후 담을 것.
+            // {
+            //   webtoonName: 'jojo', <string>
+            //     episode: 1, <number>
+            //     audioInfo: {
+            //     index: number
+            //     gridPosition: {
+            //     column: string,
+            //     row: string,
+            //   }
+            //     audioInfo: {
+            //     title: string,
+            //     src: string // <s3 uploaded location>
+            //     volume: string
+            //   }
+            //   }[]
+            //     }
           }
         }}
       >
