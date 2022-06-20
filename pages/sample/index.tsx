@@ -52,10 +52,17 @@ const Sample: FC<{ data: any }> = ({ data }) => {
 
 const getStaticProps = async () => {
   const client = await clientPromise;
-  const db = client.db("sample_restaurants");
-  const document = await db.collection("restaurants").findOne({
-    name: "Wilken'S Fine Food",
-  });
+  const dbName = process.env.MONGODB_INTERACTIVE_WEEBTOON_DB ?? "";
+  const collection = process.env.MONGODB_AUDIO_COLLECTION ?? "";
+  const db = client.db(dbName);
+
+  const document = await db
+    .collection(collection)
+    .find({
+      webtoonName: "jojo",
+      episode: 1,
+    })
+    .toArray();
 
   return {
     props: {

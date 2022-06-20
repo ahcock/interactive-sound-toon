@@ -108,8 +108,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   const soundRefs = useRef<ISoundRefs>({});
 
-  // TODO: 사운드 저장시 필요한 것 아래 push되는 항목에서 onGridClick. showGrid 빼고
-
   useEffect(function registerSoundGrid() {
     const soundGridInfo: ISoundGridData[] = [];
 
@@ -328,6 +326,77 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     }
   };
 
+  const onSoundUpload = async () => {
+    const newData = soundGridData.filter(
+      (gridData) => !!gridData.soundInfo?.src
+    );
+
+    const dataForUploading: {
+      webtoonName: string;
+      episode: number;
+      audioInfo: {
+        src: string;
+        index: number;
+        gridPosition: GridInfo;
+        title: string;
+        fileName?: string;
+        volume?: number;
+        action?: string;
+      }[];
+    } = {
+      webtoonName: "jojo",
+      episode: 1,
+      audioInfo: [],
+    };
+
+    if (!!newData) {
+      for (const data of newData) {
+        if (!!data.soundInfo && !!data.soundInfo.src) {
+          const {
+            index,
+            gridPosition,
+            soundInfo: { title, volume, action, fileName },
+          } = data;
+
+          const blob = await fetch(data.soundInfo.src).then((src) =>
+            src.blob()
+          );
+
+          const fileUploadResponse = await fetch(
+            `http://localhost:3000/api/uploadAudio?key=jojo/ep1/${data.soundInfo?.fileName}`,
+            {
+              method: "POST",
+              body: blob,
+              headers: new Headers({ "content-type": blob.type }),
+            }
+          );
+
+          const resolvedResponse = await fileUploadResponse.json();
+
+          dataForUploading.audioInfo.push({
+            index,
+            gridPosition,
+            title,
+            volume,
+            fileName,
+            src: resolvedResponse.location,
+            ...(action && { action }),
+          });
+        }
+      }
+
+      const result = await fetch(`http://localhost:3000/api/insertAudioInfo`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataForUploading),
+      });
+
+      console.log("fetch 결과", result);
+    }
+  };
+
   return (
     <SoundLayerSection height={height} width={width} show>
       {soundGridData.map((data) => {
@@ -368,65 +437,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           onAdditionalEventSave={onAdditionalEventSave}
         />
       )}
-      <button
-        onClick={async () => {
-          const newData = soundGridData.filter(
-            (gridData) => !!gridData.soundInfo?.src
-          );
-
-          console.log(newData);
-          //여기서 필터된 걸 가지고 MongoDb에 올려야할 정보를 만들어야 됨.
-          // S3에 올라간 오디오 Url 포함
-
-          const uploadedLocations: string[] = [];
-
-          if (!!newData) {
-            newData.forEach(async (data) => {
-              if (!!data.soundInfo && !!data.soundInfo.src) {
-                const blob = await fetch(data.soundInfo.src).then((src) =>
-                  src.blob()
-                );
-
-                const response = await fetch(
-                  `http://localhost:3000/api/uploadVideo?key=${data.soundInfo?.fileName}`,
-                  {
-                    method: "POST",
-                    body: blob,
-                    headers: new Headers({ "content-type": blob.type }),
-                  }
-                );
-
-                response
-                  .json()
-                  .then((res) => uploadedLocations.push(res.location));
-              }
-            });
-
-            // s3에 업로드된 파일들의 위치
-            console.log(uploadedLocations);
-
-            // TODO: 여기서 이제 몽고DB에 데이터를 올려야 함. nextAPI를 이용해 올릴 것. audioInfo를 먼저 배열에 만든 후 담을 것.
-            // {
-            //   webtoonName: 'jojo', <string>
-            //     episode: 1, <number>
-            //     audioInfo: {
-            //     index: number
-            //     gridPosition: {
-            //     column: string,
-            //     row: string,
-            //   }
-            //     audioInfo: {
-            //     title: string,
-            //     src: string // <s3 uploaded location>
-            //     volume: string
-            //   }
-            //   }[]
-            //     }
-          }
-        }}
-      >
-        업로드
-      </button>
+      <button onClick={onSoundUpload}>업로드</button>
     </SoundLayerSection>
   );
 };

@@ -3,7 +3,7 @@ import { s3Client } from "../../lib/s3";
 import { ManagedUpload } from "aws-sdk/lib/s3/managed_upload";
 import SendData = ManagedUpload.SendData;
 
-const videoUploadHandler = (req: NextApiRequest, res: NextApiResponse) => {
+const audioUploadHandler = (req: NextApiRequest, res: NextApiResponse) => {
   if (req.query.key) {
     s3Client.upload(
       {
@@ -31,4 +31,4 @@ export const config = {
     },
   },
 };
-export default videoUploadHandler;
+export default audioUploadHandler;
