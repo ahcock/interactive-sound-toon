@@ -6,9 +6,16 @@ export default async function insertAudioInfo(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const dbName = process.env.MONGODB_INTERACTIVE_WEEBTOON_DB ?? "";
+  const collection = process.env.MONGODB_AUDIO_COLLECTION ?? "";
   const client = await clientPromise;
-  const db = client.db("interactive_toon");
-  // await db.collection("audioData").insertOne({ test: "테스트 도큐먼트 인풋" });
+  const db = client.db(dbName);
 
-  console.log(req.body);
+  try {
+    const result = await db.collection(collection).insertOne(req.body);
+    res.json(result);
+  } catch (err) {
+    res.json(err);
+    res.end();
+  }
 }
