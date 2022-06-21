@@ -8,7 +8,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <GlobalStyle />
       <GlobalNavBar>
-        <Component {...pageProps} />;
+        <Component {...pageProps} />
       </GlobalNavBar>
     </>
   );

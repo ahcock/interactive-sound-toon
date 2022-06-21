@@ -1,8 +1,7 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import clientPromise from "../../lib/mongodb";
 
-export default async function insertAudioInfo(
+export default async function mongoUpsertAudioInfo(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -11,8 +10,17 @@ export default async function insertAudioInfo(
   const client = await clientPromise;
   const db = client.db(dbName);
 
+  const filter = {
+    webtoonName: req.body.webtoonName,
+    episode: req.body.episode,
+  };
+
+  console.log("soundInfo", req.body);
   try {
-    const result = await db.collection(collection).insertOne(req.body);
+    const result = await db
+      .collection(collection)
+      .updateOne(filter, { $set: req.body }, { upsert: true });
+
     res.json(result);
   } catch (err) {
     res.json(err);

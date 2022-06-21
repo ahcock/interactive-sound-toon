@@ -1,10 +1,10 @@
-import { FC, forwardRef } from "react";
+import { forwardRef } from "react";
 import { ImageLayerSection } from "./imageLayer.styles";
-import { SampleImageType } from "../../pages/sample";
+import { ISampleImageType } from "../../pages/sample";
 import Image from "next/image";
 
 interface ImageLayerProps {
-  imageList: SampleImageType[];
+  imageList: ISampleImageType[];
 }
 
 const ImageLayer = forwardRef<HTMLDivElement, ImageLayerProps>(
