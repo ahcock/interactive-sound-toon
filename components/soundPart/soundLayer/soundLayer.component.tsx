@@ -6,6 +6,7 @@ import {
 } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
+import { IAudioInfoDocument } from "../../../pages/sample";
 
 type GridInfo = {
   column: string;
@@ -49,6 +50,7 @@ interface ISoundLayerProps {
     height: number;
     width: number;
   };
+  audioInfoDocument: IAudioInfoDocument;
 }
 
 interface ISoundGridData {
@@ -57,27 +59,20 @@ interface ISoundGridData {
   showGrid: boolean;
   onGridClick: OnGridClick;
   soundInfo?: {
+    file?: File;
     src?: string;
     title: string;
     fileName?: string;
     volume?: number;
     onSoundContainerClick: () => void;
     action?: string;
+    isSoundAlreadyUploaded?: boolean;
   };
 }
 
-type SavedSoundGridData = Pick<
-  ISoundGridData,
-  "index" | "gridPosition" | "soundInfo"
-> & { soundInfo: { src: File } };
-
-// TODO: 저장된 사운드 불러오기, 렌더링 하기
-// TODO: 서버에서 사운드를 불러오기, 렌더링 하기
-// TODO: 데이터 베이스 스키마는 어떻게 짤 것인가?
-// TODO: 회차별로 짤 것인가?
-
 const SoundLayer: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
+  audioInfoDocument,
 }) => {
   const [soundGridData, setSoundGridData] = useState<ISoundGridData[]>([]);
   const [soundModalStatus, setSoundModalStatus] = useState<ISoundModalStatus>({
@@ -88,14 +83,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     },
     clickedGridIndex: 0,
   });
-  //
-  // const [audioContext, setAudioContext] = useState<AudioContext>();
-  // const [audioAPITracks, setAudioAPITracks] = useState<{
-  //   [key: string]: {
-  //     track: MediaElementAudioSourceNode;
-  //     gainNode: GainNode;
-  //   };
-  // }>({});
+  const [isSoundAgreed, setIsSoundAgreed] = useState(false);
 
   const audioAPITracks = useRef<{
     [key: string]: {
@@ -108,22 +96,60 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   const soundRefs = useRef<ISoundRefs>({});
 
-  useEffect(function registerSoundGrid() {
-    const soundGridInfo: ISoundGridData[] = [];
+  useEffect(
+    function registerSoundGrid() {
+      const soundGridInfo: ISoundGridData[] = [];
 
-    for (let i = 1; i < 201; i++) {
-      for (let j = 1; j < 11; j++) {
-        soundGridInfo.push({
-          index: soundGridInfo.length,
-          gridPosition: { row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` },
-          showGrid: true,
-          onGridClick: onGridClick,
-        });
+      for (let i = 1; i < 201; i++) {
+        for (let j = 1; j < 11; j++) {
+          soundGridInfo.push({
+            index: soundGridInfo.length,
+            gridPosition: { row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` },
+            showGrid: true,
+            onGridClick: onGridClick,
+          });
+        }
       }
-    }
 
-    setSoundGridData(soundGridInfo);
-  }, []);
+      if (!!audioInfoDocument) {
+        (async () => {
+          for (const {
+            index,
+            gridPosition,
+            title,
+            src,
+            volume,
+            fileName,
+            action,
+          } of audioInfoDocument.audioInfo) {
+            const file = await fetch(src)
+              .then((res) => res.blob())
+              .then((blob) => new File([blob], fileName ?? ""));
+
+            soundGridInfo[index] = {
+              gridPosition,
+              index,
+              showGrid: true,
+              onGridClick: onGridClick,
+              soundInfo: {
+                title,
+                volume,
+                fileName,
+                src,
+                onSoundContainerClick: () =>
+                  onSavedSoundClick(gridPosition, index, { name: title, file }),
+                isSoundAlreadyUploaded: true,
+                ...(action && { action }),
+              },
+            };
+          }
+        })();
+      }
+
+      setSoundGridData(soundGridInfo);
+    },
+    [audioInfoDocument.audioInfo]
+  );
 
   useEffect(
     function setIntersectionObserver() {
@@ -157,7 +183,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               ) {
                 audioAPITracks.current[soundName].gainNode.gain.value =
                   parseFloat(!!volume ? `${volume}` : "1");
-                // soundRefs.current[soundName].volume = parseFloat(volume);
                 soundRefs.current[soundName].play();
               }
             });
@@ -172,7 +197,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         }
       }
     },
-    [soundGridData]
+    [isSoundAgreed, soundGridData]
   );
 
   const refCallback = (audioNode: HTMLAudioElement) => {
@@ -192,11 +217,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
         const gainNode = audioContext.createGain();
 
-        // const eq = audioContext.createBiquadFilter();
-        // eq.type = "lowpass";
-        // eq.frequency.value = 200;
-        //
-
         track.connect(gainNode).connect(audioContext.destination);
 
         audioAPITracks.current = {
@@ -206,19 +226,9 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             gainNode,
           },
         };
-
-        // setAudioAPITracks({
-        //   ...audioAPITracks,
-        //   [soundName]: {
-        //     track,
-        //     gainNode,
-        //   },
-        // });
       }
     }
   };
-
-  console.log(audioAPITracks);
 
   const onGridClick: OnGridClick = (gridInfo, index) => {
     setSoundModalStatus({
@@ -243,7 +253,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   const onSoundSave: OnSoundSave = (title, file, volume) => {
     if (!!file) {
-      console.log("온 세이브 먼저");
       const audioUrl = URL.createObjectURL(file);
 
       const gridDataWithSound: ISoundGridData = {
@@ -254,6 +263,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         soundInfo: {
           title,
           volume,
+          file,
           fileName: file.name,
           src: audioUrl,
           onSoundContainerClick: () =>
@@ -327,78 +337,98 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   };
 
   const onSoundUpload = async () => {
-    const newData = soundGridData.filter(
-      (gridData) => !!gridData.soundInfo?.src
+    const savedSound = soundGridData.filter((gridData) => gridData.soundInfo);
+
+    const { unUploadedSound, alreadyUploadedSound } = savedSound.reduce<{
+      unUploadedSound: ISoundGridData[];
+      alreadyUploadedSound: ISoundGridData[];
+    }>(
+      ({ unUploadedSound, alreadyUploadedSound }, sound) => {
+        sound.soundInfo?.isSoundAlreadyUploaded
+          ? alreadyUploadedSound.push(sound)
+          : unUploadedSound.push(sound);
+
+        return { unUploadedSound, alreadyUploadedSound };
+      },
+      {
+        unUploadedSound: [],
+        alreadyUploadedSound: [],
+      }
     );
 
-    const dataForUploading: {
-      webtoonName: string;
-      episode: number;
-      audioInfo: {
-        src: string;
-        index: number;
-        gridPosition: GridInfo;
-        title: string;
-        fileName?: string;
-        volume?: number;
-        action?: string;
-      }[];
-    } = {
+    const dataForUploading: IAudioInfoDocument = {
       webtoonName: "jojo",
       episode: 1,
       audioInfo: [],
     };
 
-    if (!!newData) {
-      for (const data of newData) {
+    const alreadyExistAudioInfo = audioInfoDocument.audioInfo.filter(
+      ({ index, fileName }) =>
+        alreadyUploadedSound.find(
+          ({ index: i, soundInfo }) =>
+            index === i && fileName === soundInfo?.fileName
+        )
+    );
+
+    const newlyUploadedSound: IAudioInfoDocument["audioInfo"] = [];
+
+    if (!!savedSound) {
+      for (const data of unUploadedSound) {
         if (!!data.soundInfo && !!data.soundInfo.src) {
           const {
             index,
             gridPosition,
-            soundInfo: { title, volume, action, fileName },
+            soundInfo: { file: audioFile, title, volume, action, fileName },
           } = data;
 
-          const blob = await fetch(data.soundInfo.src).then((src) =>
-            src.blob()
-          );
+          if (!!audioFile) {
+            const { url } = await fetch(
+              `http://localhost:3000/api/s3GetSignedUrlPromise?key=jojo/ep1/${data.soundInfo?.fileName}`,
+              {
+                headers: new Headers({ "content-type": audioFile.type }),
+              }
+            ).then((res) => res.json());
 
-          const fileUploadResponse = await fetch(
-            `http://localhost:3000/api/uploadAudio?key=jojo/ep1/${data.soundInfo?.fileName}`,
-            {
-              method: "POST",
-              body: blob,
-              headers: new Headers({ "content-type": blob.type }),
-            }
-          );
-
-          const resolvedResponse = await fileUploadResponse.json();
-
-          dataForUploading.audioInfo.push({
-            index,
-            gridPosition,
-            title,
-            volume,
-            fileName,
-            src: resolvedResponse.location,
-            ...(action && { action }),
-          });
+            const uploadRes = await fetch(url, {
+              method: "PUT",
+              body: audioFile,
+              headers: {
+                "Content-Type": audioFile.type,
+              },
+            });
+            // dataForUploading.audioInfo.push
+            newlyUploadedSound.push({
+              index,
+              gridPosition,
+              title,
+              volume,
+              fileName,
+              src: uploadRes.url.split("?")[0],
+              ...(action && { action }),
+            });
+          }
         }
       }
 
-      const result = await fetch(`http://localhost:3000/api/insertAudioInfo`, {
+      dataForUploading.audioInfo = [
+        ...alreadyExistAudioInfo,
+        ...newlyUploadedSound,
+      ];
+
+      // TODO: 배포됐을 때 base url과 development 상황 때 base url을 환경변수로 구분해주어야 함.
+      await fetch(`http://localhost:3000/api/mongoUpsertAudioInfo`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(dataForUploading),
       });
-
-      console.log("fetch 결과", result);
     }
   };
 
   return (
     <SoundLayerSection height={height} width={width} show>
+      <button onClick={() => setIsSoundAgreed(true)}>사운드 들을랴?</button>
       {soundGridData.map((data) => {
         const { index, gridPosition, showGrid, onGridClick, soundInfo } = data;
 
@@ -410,7 +440,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             showGrid={showGrid}
             onGridClick={onGridClick}
           >
-            {soundInfo && (
+            {!!soundInfo && (
               <SoundContainer onClick={soundInfo.onSoundContainerClick}>
                 {soundInfo.title}
                 <StyledAudio
@@ -419,6 +449,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                   data-action={soundInfo.action}
                   data-volume={soundInfo.volume}
                   controls
+                  crossOrigin="anonymous"
                 >
                   <source src={soundInfo.src} />
                 </StyledAudio>

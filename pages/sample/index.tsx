@@ -1,23 +1,43 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { PageContainer } from "./samplePageIndex.styles";
-import { SoundLayer } from "../../components/soundPart/soundLayer/soundLayer.component";
+import {
+  GridInfo,
+  SoundLayer,
+} from "../../components/soundPart/soundLayer/soundLayer.component";
 import ImageLayer from "../../components/imageLayer/imageLayer.component";
 import clientPromise from "../../lib/mongodb";
 
-interface SampleImageType {
+interface ISampleImageType {
   src: string;
 }
 
-interface TotalImageDimensionType {
+interface ITotalImageDimensionType {
   width: number;
   height: number;
 }
 
-const Sample: FC<{ data: any }> = ({ data }) => {
-  console.log(data);
-  const [imageList, setImageList] = useState<SampleImageType[]>([]);
+interface IAudioInfoDocument {
+  webtoonName: string;
+  episode: number;
+  audioInfo: {
+    src: string;
+    index: number;
+    gridPosition: GridInfo;
+    title: string;
+    fileName?: string;
+    volume?: number;
+    action?: string;
+  }[];
+}
+
+interface ISamplePageProps {
+  audioInfoDocument: IAudioInfoDocument;
+}
+
+const Sample: FC<ISamplePageProps> = ({ audioInfoDocument }) => {
+  const [imageList, setImageList] = useState<ISampleImageType[]>([]);
   const [imageLayerDimension, setImageLayerDimension] =
-    useState<TotalImageDimensionType>({ width: 0, height: 0 });
+    useState<ITotalImageDimensionType>({ width: 0, height: 0 });
 
   const imagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -45,32 +65,33 @@ const Sample: FC<{ data: any }> = ({ data }) => {
   ) : (
     <PageContainer>
       <ImageLayer imageList={imageList} ref={imagesContainerRef} />
-      <SoundLayer imageLayerDimension={imageLayerDimension} />
+      <SoundLayer
+        imageLayerDimension={imageLayerDimension}
+        audioInfoDocument={audioInfoDocument}
+      />
     </PageContainer>
   );
 };
 
 const getStaticProps = async () => {
+  // TODO: 이 fetch 로직을 next api route로 옮겨야 하나? getStaticProps안에서 Next API route에 접근할 수 있나?
   const client = await clientPromise;
   const dbName = process.env.MONGODB_INTERACTIVE_WEEBTOON_DB ?? "";
   const collection = process.env.MONGODB_AUDIO_COLLECTION ?? "";
   const db = client.db(dbName);
 
-  const document = await db
-    .collection(collection)
-    .find({
-      webtoonName: "jojo",
-      episode: 1,
-    })
-    .toArray();
+  const document = await db.collection(collection).findOne({
+    webtoonName: "jojo",
+    episode: 1,
+  });
 
   return {
     props: {
-      data: JSON.parse(JSON.stringify(document)),
+      audioInfoDocument: JSON.parse(JSON.stringify(document)),
     },
   };
 };
 
 export default Sample;
 export { getStaticProps };
-export type { SampleImageType };
+export type { ISampleImageType, IAudioInfoDocument };
