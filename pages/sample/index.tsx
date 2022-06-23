@@ -5,6 +5,8 @@ import {
   SoundLayer,
 } from "../../components/soundPart/soundLayer/soundLayer.component";
 import ImageLayer from "../../components/imageLayer/imageLayer.component";
+import { mongoFindImageInfoDocument } from "../../lib/mongo/mongoFindImageInfoDocument";
+import { mongoFindAudioInfoDocument } from "../../lib/mongo/mongoFindAudioInfoDocument";
 
 interface ISampleImageType {
   src: string;
@@ -47,7 +49,7 @@ const Sample: FC<ISamplePageProps> = ({
   // const [imageList, setImageList] = useState<ISampleImageType[]>([]);
   const [imageLayerDimension, setImageLayerDimension] =
     useState<ITotalImageDimensionType>({ width: 0, height: 0 });
-
+  console.log({ imageInfoDocument });
   const imagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(
@@ -86,13 +88,15 @@ const getStaticProps = async () => {
 
   // TODO: 아래 2개의 fetch를 promise all로 모아서 한번에 return해 주어야겠다.
 
-  const audioInfoDocument = await fetch(
-    `http://localhost:3000/api/mongoFindAudioInfoDocument?webtoonName=${webtoonName}&episode=${episode}`
-  ).then((res) => res.json());
+  const audioInfoDocument = await mongoFindAudioInfoDocument(
+    webtoonName,
+    episode
+  );
 
-  const imageInfoDocument = await fetch(
-    `http://localhost:3000/api/mongoFindImageInfoDocuments?webtoonName=${webtoonName}&episode=${episode}`
-  ).then((res) => res.json());
+  const imageInfoDocument = await mongoFindImageInfoDocument(
+    webtoonName,
+    episode
+  );
 
   return {
     props: {

@@ -1,16 +1,13 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import clientPromise from "../../lib/mongodb";
 
-export default async function mongoFindAudioInfoDocument(
-  req: NextApiRequest,
-  res: NextApiResponse
+export async function mongoFindAudioInfoDocument(
+  webtoonName: string,
+  episode: string
 ) {
   const dbName = process.env.MONGODB_INTERACTIVE_WEEBTOON_DB ?? "";
   const collection = process.env.MONGODB_AUDIO_COLLECTION ?? "";
   const client = await clientPromise;
   const db = client.db(dbName);
-
-  const { webtoonName, episode } = req.query;
 
   try {
     const document = await db.collection(collection).findOne({
@@ -18,9 +15,10 @@ export default async function mongoFindAudioInfoDocument(
       episode,
     });
 
-    res.status(200).json(document);
-  } catch (err) {
-    res.json(err);
-    res.end();
+    return JSON.parse(JSON.stringify(document));
+  } catch (error) {
+    return {
+      error,
+    };
   }
 }

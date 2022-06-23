@@ -1,25 +1,26 @@
 import { FC } from "react";
 import { IAudioInfoDocument } from "../sample";
+import { WebtoonCardComponent } from "../../components/webtoonCard/webtoonCard.component";
+import { SoundWebtoonsContainer } from "./soundWebtoonsIndex.styles";
+import { mongoFindAllSoundWebtoons } from "../../lib/mongo/mongoFindAllSoundWebtoons";
 
 interface ISoundWebtoonsProps {
-  audioInfoDocument: IAudioInfoDocument;
+  allSoundWebtoons: IAudioInfoDocument[];
 }
 
-const SoundWebtoons: FC<ISoundWebtoonsProps> = ({ audioInfoDocument }) => {
-  return <div></div>;
+const SoundWebtoons: FC<ISoundWebtoonsProps> = ({ allSoundWebtoons }) => {
+  return (
+    <SoundWebtoonsContainer>
+      <WebtoonCardComponent>헬로</WebtoonCardComponent>
+    </SoundWebtoonsContainer>
+  );
 };
 
 const getStaticProps = async () => {
-  const webtoonName = "jojo";
-  const episode = 1;
-
-  const audioInfoDocument = await fetch(
-    `http://localhost:3000/api/mongoFindAudioInfoDocument?webtoonName=${webtoonName}&episode=${episode}`
-  ).then((res) => res.json());
-
+  const allSoundWebtoons = await mongoFindAllSoundWebtoons();
   return {
     props: {
-      audioInfoDocument,
+      allSoundWebtoons,
     },
   };
 };
