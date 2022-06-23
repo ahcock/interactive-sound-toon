@@ -84,6 +84,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     clickedGridIndex: 0,
   });
   const [isSoundAgreed, setIsSoundAgreed] = useState(false);
+  const [audioContext, setAudioContext] = useState<AudioContext>();
 
   const audioAPITracks = useRef<{
     [key: string]: {
@@ -92,9 +93,12 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     };
   }>({});
 
-  const audioContext = new AudioContext();
-
   const soundRefs = useRef<ISoundRefs>({});
+
+  useEffect(() => {
+    const audioCtx = new AudioContext();
+    setAudioContext(audioCtx);
+  }, []);
 
   useEffect(
     function registerSoundGrid() {
@@ -207,7 +211,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
         : audioNode.getAttribute("data-name");
 
-      if (!!soundName && !audioAPITracks.current[soundName]) {
+      if (!!soundName && !audioAPITracks.current[soundName] && !!audioContext) {
         soundRefs.current[soundName] = audioNode;
 
         // make new audio context for Web Audio API
@@ -358,7 +362,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
     const dataForUploading: IAudioInfoDocument = {
       webtoonName: "jojo",
-      episode: 1,
+      episode: "1",
       audioInfo: [],
     };
 
@@ -426,9 +430,16 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     }
   };
 
+  const soundPlayConsentHandler = () => {
+    if (!isSoundAgreed) {
+      setIsSoundAgreed(true);
+      audioContext?.resume();
+    }
+  };
+
   return (
     <SoundLayerSection height={height} width={width} show>
-      <button onClick={() => setIsSoundAgreed(true)}>사운드 들을랴?</button>
+      <button onClick={soundPlayConsentHandler}>사운드 들을랴?</button>
       {soundGridData.map((data) => {
         const { index, gridPosition, showGrid, onGridClick, soundInfo } = data;
 

@@ -27,8 +27,8 @@ const GlobalNavBar: FC = ({ children }) => {
               </Link>
             </li>
             <li>
-              <Link href="/list" passHref>
-                <StyledLink>LIST</StyledLink>
+              <Link href="/soundWebtoons" passHref>
+                <StyledLink>Sound Webtoons</StyledLink>
               </Link>
             </li>
             <li>

@@ -5,7 +5,6 @@ import {
   SoundLayer,
 } from "../../components/soundPart/soundLayer/soundLayer.component";
 import ImageLayer from "../../components/imageLayer/imageLayer.component";
-import clientPromise from "../../lib/mongodb";
 
 interface ISampleImageType {
   src: string;
@@ -18,7 +17,7 @@ interface ITotalImageDimensionType {
 
 interface IAudioInfoDocument {
   webtoonName: string;
-  episode: number;
+  episode: string;
   audioInfo: {
     src: string;
     index: number;
@@ -30,22 +29,26 @@ interface IAudioInfoDocument {
   }[];
 }
 
-interface ISamplePageProps {
-  audioInfoDocument: IAudioInfoDocument;
+interface IImageInfoDocument {
+  webtoonName: string;
+  episode: string;
+  sources: string[];
 }
 
-const Sample: FC<ISamplePageProps> = ({ audioInfoDocument }) => {
-  const [imageList, setImageList] = useState<ISampleImageType[]>([]);
+interface ISamplePageProps {
+  audioInfoDocument: IAudioInfoDocument;
+  imageInfoDocument: IImageInfoDocument;
+}
+
+const Sample: FC<ISamplePageProps> = ({
+  audioInfoDocument,
+  imageInfoDocument,
+}) => {
+  // const [imageList, setImageList] = useState<ISampleImageType[]>([]);
   const [imageLayerDimension, setImageLayerDimension] =
     useState<ITotalImageDimensionType>({ width: 0, height: 0 });
 
   const imagesContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(function fetchSampleImages() {
-    fetch("/data/sampleImages.json")
-      .then((res) => res.json())
-      .then((images) => setImageList(images));
-  }, []);
 
   useEffect(
     function getImageContainerDimension() {
@@ -57,14 +60,17 @@ const Sample: FC<ISamplePageProps> = ({ audioInfoDocument }) => {
         setImageLayerDimension({ width, height });
       }
     },
-    [imageList]
+    [imageInfoDocument.sources]
   );
 
-  return imageList.length === 0 ? (
+  return !imageInfoDocument ? (
     <p>Loading Images</p>
   ) : (
     <PageContainer>
-      <ImageLayer imageList={imageList} ref={imagesContainerRef} />
+      <ImageLayer
+        imageSources={imageInfoDocument.sources}
+        ref={imagesContainerRef}
+      />
       <SoundLayer
         imageLayerDimension={imageLayerDimension}
         audioInfoDocument={audioInfoDocument}
@@ -74,24 +80,28 @@ const Sample: FC<ISamplePageProps> = ({ audioInfoDocument }) => {
 };
 
 const getStaticProps = async () => {
-  // TODO: 이 fetch 로직을 next api route로 옮겨야 하나? getStaticProps안에서 Next API route에 접근할 수 있나?
-  const client = await clientPromise;
-  const dbName = process.env.MONGODB_INTERACTIVE_WEEBTOON_DB ?? "";
-  const collection = process.env.MONGODB_AUDIO_COLLECTION ?? "";
-  const db = client.db(dbName);
+  // TODO 이 webtoonName, episode values를 URL에서 추출해 전역변수에 두어야 하나?
+  const webtoonName = "jojo";
+  const episode = "1";
 
-  const document = await db.collection(collection).findOne({
-    webtoonName: "jojo",
-    episode: 1,
-  });
+  // TODO: 아래 2개의 fetch를 promise all로 모아서 한번에 return해 주어야겠다.
+
+  const audioInfoDocument = await fetch(
+    `http://localhost:3000/api/mongoFindAudioInfoDocument?webtoonName=${webtoonName}&episode=${episode}`
+  ).then((res) => res.json());
+
+  const imageInfoDocument = await fetch(
+    `http://localhost:3000/api/mongoFindImageInfoDocuments?webtoonName=${webtoonName}&episode=${episode}`
+  ).then((res) => res.json());
 
   return {
     props: {
-      audioInfoDocument: JSON.parse(JSON.stringify(document)),
+      audioInfoDocument,
+      imageInfoDocument,
     },
   };
 };
 
 export default Sample;
 export { getStaticProps };
-export type { ISampleImageType, IAudioInfoDocument };
+export type { ISampleImageType, IAudioInfoDocument, IImageInfoDocument };
