@@ -46,10 +46,9 @@ const Sample: FC<ISamplePageProps> = ({
   audioInfoDocument,
   imageInfoDocument,
 }) => {
-  // const [imageList, setImageList] = useState<ISampleImageType[]>([]);
   const [imageLayerDimension, setImageLayerDimension] =
     useState<ITotalImageDimensionType>({ width: 0, height: 0 });
-  console.log({ imageInfoDocument });
+
   const imagesContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(
