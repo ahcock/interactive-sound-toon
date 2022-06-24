@@ -13,6 +13,9 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    domains: [process.env.S3_DOMAIN],
+  },
 };
 
 module.exports = nextConfig;
