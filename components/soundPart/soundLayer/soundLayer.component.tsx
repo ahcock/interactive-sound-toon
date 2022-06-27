@@ -387,7 +387,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
           if (!!audioFile) {
             const { url } = await fetch(
-              `http://localhost:3000/api/s3GetSignedUrlPromise?key=jojo/ep1/${data.soundInfo?.fileName}`,
+              `/api/s3GetSignedUrlPromise?key=jojo/ep1/${data.soundInfo?.fileName}`,
               {
                 headers: new Headers({ "content-type": audioFile.type }),
               }
@@ -420,7 +420,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       ];
 
       // TODO: 배포됐을 때 base url과 development 상황 때 base url을 환경변수로 구분해주어야 함.
-      await fetch(`http://localhost:3000/api/mongoUpsertAudioInfo`, {
+      await fetch(`/api/mongoUpsertAudioInfo`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
