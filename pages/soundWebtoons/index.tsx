@@ -1,29 +1,44 @@
 import { FC } from "react";
-import { IAudioInfoDocument } from "../sample";
-import { WebtoonCardComponent } from "../../components/webtoonCard/webtoonCard.component";
+import { WebtoonCard } from "../../components/webtoonCard/webtoonCard.component";
 import { SoundWebtoonsContainer } from "./soundWebtoonsIndex.styles";
-import { mongoFindAllSoundWebtoons } from "../../lib/mongo/mongoFindAllSoundWebtoons";
+import { mongoFindAllImageInfo } from "../../lib/mongo/mongoFindAllImageInfo";
 
-interface ISoundWebtoonsProps {
-  allSoundWebtoons: IAudioInfoDocument[];
+interface IWebtoonCardInfo {
+  _id: string;
+  title: string;
+  thumbnail: string;
+  webtoonName: string;
+  episode: string;
 }
 
-const SoundWebtoons: FC<ISoundWebtoonsProps> = ({ allSoundWebtoons }) => {
+interface ISoundWebtoonsProps {
+  allImageInfoForWebtoonCard: IWebtoonCardInfo[];
+}
+
+const SoundWebtoons: FC<ISoundWebtoonsProps> = ({
+  allImageInfoForWebtoonCard,
+}) => {
   return (
     <SoundWebtoonsContainer>
-      <WebtoonCardComponent>헬로</WebtoonCardComponent>
+      {allImageInfoForWebtoonCard.map((webtoonCardInfo) => (
+        <WebtoonCard
+          key={webtoonCardInfo._id}
+          webtoonCardInfo={webtoonCardInfo}
+        />
+      ))}
     </SoundWebtoonsContainer>
   );
 };
 
 const getStaticProps = async () => {
-  const allSoundWebtoons = await mongoFindAllSoundWebtoons();
+  const allImageInfoForWebtoonCard = await mongoFindAllImageInfo();
   return {
     props: {
-      allSoundWebtoons,
+      allImageInfoForWebtoonCard,
     },
   };
 };
 
 export default SoundWebtoons;
 export { getStaticProps };
+export type { IWebtoonCardInfo };

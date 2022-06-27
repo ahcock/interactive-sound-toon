@@ -7,7 +7,7 @@ export async function mongoFindAllSoundWebtoons() {
   const db = client.db(dbName);
 
   try {
-    const documents = await db.collection(collection).find({});
+    const documents = await db.collection(collection).find({}).toArray();
     return JSON.parse(JSON.stringify(documents));
   } catch (error) {
     return {
