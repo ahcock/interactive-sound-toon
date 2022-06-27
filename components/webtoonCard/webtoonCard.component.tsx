@@ -15,6 +15,8 @@ interface IWebtoonCardProps {
 
 const WebtoonCard: FC<IWebtoonCardProps> = ({ webtoonCardInfo }) => {
   const { title, thumbnail, webtoonName, episode } = webtoonCardInfo;
+
+  // TODO: 아래 href의 url을 route 파일 같은 곳에서 한곳에서 관리해야 함
   return (
     <WebtoonCardContainer
       href={`/soundWebtoons/${webtoonName}/${episode}`}
