@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { WebtoonCard } from "../../components/webtoonCard/webtoonCard.component";
-import { SoundWebtoonsContainer } from "./soundWebtoonsIndex.styles";
+import { SoundWebtoonsContainer } from "../../styles/pageComponentStyles/soundWebtoonsIndex.styles";
 import { mongoFindAllImageInfo } from "../../lib/mongo/mongoFindAllImageInfo";
 
 interface IWebtoonCardInfo {
