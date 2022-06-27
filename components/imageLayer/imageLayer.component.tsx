@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { ImageLayerSection } from "./imageLayer.styles";
-import { IImageInfoDocument } from "../../pages/sample";
+import { IImageInfoDocument } from "../../pages/soundWebtoons/[name]/[episode]";
 import Image from "next/image";
 
 interface ImageLayerProps {

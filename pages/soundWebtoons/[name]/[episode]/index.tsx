@@ -1,16 +1,14 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { PageContainer } from "./samplePageIndex.styles";
+import { GetStaticProps } from "next";
+import { mongoFindAudioInfoDocument } from "../../../../lib/mongo/mongoFindAudioInfoDocument";
+import { mongoFindImageInfoDocument } from "../../../../lib/mongo/mongoFindImageInfoDocument";
+import { mongoFindAllSoundWebtoons } from "../../../../lib/mongo/mongoFindAllSoundWebtoons";
+import ImageLayer from "../../../../components/imageLayer/imageLayer.component";
 import {
   GridInfo,
   SoundLayer,
-} from "../../components/soundPart/soundLayer/soundLayer.component";
-import ImageLayer from "../../components/imageLayer/imageLayer.component";
-import { mongoFindImageInfoDocument } from "../../lib/mongo/mongoFindImageInfoDocument";
-import { mongoFindAudioInfoDocument } from "../../lib/mongo/mongoFindAudioInfoDocument";
-
-interface ISampleImageType {
-  src: string;
-}
+} from "../../../../components/soundPart/soundLayer/soundLayer.component";
+import { PageContainer } from "./soundWebtoonIndex.styles";
 
 interface ITotalImageDimensionType {
   width: number;
@@ -37,12 +35,12 @@ interface IImageInfoDocument {
   sources: string[];
 }
 
-interface ISamplePageProps {
+interface ISoundWebtoonProps {
   audioInfoDocument: IAudioInfoDocument;
   imageInfoDocument: IImageInfoDocument;
 }
 
-const Sample: FC<ISamplePageProps> = ({
+const SoundWebtoon: FC<ISoundWebtoonProps> = ({
   audioInfoDocument,
   imageInfoDocument,
 }) => {
@@ -80,22 +78,24 @@ const Sample: FC<ISamplePageProps> = ({
   );
 };
 
-const getStaticProps = async () => {
-  // TODO 이 webtoonName, episode values를 URL에서 추출해 전역변수에 두어야 하나?
-  const webtoonName = "jojo";
-  const episode = "1";
+const getStaticPaths = async () => {
+  const allDocuments = await mongoFindAllSoundWebtoons();
 
-  // TODO: 아래 2개의 fetch를 promise all로 모아서 한번에 return해 주어야겠다.
+  const paths = allDocuments.map((webtoon: IAudioInfoDocument) => ({
+    params: { name: webtoon.webtoonName, episode: webtoon.episode },
+  }));
 
-  const audioInfoDocument = await mongoFindAudioInfoDocument(
-    webtoonName,
-    episode
-  );
+  return { paths, fallback: false };
+};
 
-  const imageInfoDocument = await mongoFindImageInfoDocument(
-    webtoonName,
-    episode
-  );
+const getStaticProps: GetStaticProps = async ({ params }) => {
+  const webtoonName = typeof params?.name === "string" ? params.name : "";
+  const episode = typeof params?.episode === "string" ? params.episode : "";
+
+  const [audioInfoDocument, imageInfoDocument] = await Promise.all([
+    mongoFindAudioInfoDocument(webtoonName, episode),
+    mongoFindImageInfoDocument(webtoonName, episode),
+  ]);
 
   return {
     props: {
@@ -105,6 +105,10 @@ const getStaticProps = async () => {
   };
 };
 
-export default Sample;
-export { getStaticProps };
-export type { ISampleImageType, IAudioInfoDocument, IImageInfoDocument };
+export default SoundWebtoon;
+export { getStaticPaths, getStaticProps };
+export type {
+  ITotalImageDimensionType,
+  IAudioInfoDocument,
+  IImageInfoDocument,
+};

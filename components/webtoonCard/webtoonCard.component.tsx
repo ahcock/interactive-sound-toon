@@ -7,18 +7,27 @@ import {
   WebtoonThumbnail,
   WebtoonTitle,
 } from "./webtoonCard.styles";
+import { IWebtoonCardInfo } from "../../pages/soundWebtoons";
 
-const WebtoonCardComponent: FC = () => {
+interface IWebtoonCardProps {
+  webtoonCardInfo: IWebtoonCardInfo;
+}
+
+const WebtoonCard: FC<IWebtoonCardProps> = ({ webtoonCardInfo }) => {
+  const { title, thumbnail, webtoonName, episode } = webtoonCardInfo;
   return (
-    <WebtoonCardContainer href="/" passHref>
+    <WebtoonCardContainer
+      href={`/soundWebtoons/${webtoonName}/${episode}`}
+      passHref
+    >
       <WebtoonCardInnerContainer>
         <StyledAnchor>
-          <WebtoonTitle>{"내일의 조 1화"}</WebtoonTitle>
+          <WebtoonTitle>{title}</WebtoonTitle>
         </StyledAnchor>
         <ThumbnailContainer>
           <WebtoonThumbnail
-            src="https://interactive-sound-toon.s3.ap-northeast-2.amazonaws.com/images/jojo/ep1/thumbnail_jojo_1.jpeg"
-            alt="웹툰 대표 이미지"
+            src={thumbnail}
+            alt={`${title} 대표 이미지`}
             layout="fill"
           />
         </ThumbnailContainer>
@@ -27,4 +36,4 @@ const WebtoonCardComponent: FC = () => {
   );
 };
 
-export { WebtoonCardComponent };
+export { WebtoonCard };
