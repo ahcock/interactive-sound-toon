@@ -8,7 +8,7 @@ import {
   GridInfo,
   SoundLayer,
 } from "../../../../components/soundPart/soundLayer/soundLayer.component";
-import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonIndex.styles";
+import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
 
 interface ITotalImageDimensionType {
   width: number;

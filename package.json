@@ -9,8 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@magic-sdk/types": "^7.1.1",
     "@types/styled-components": "^5.1.24",
     "aws-sdk": "^2.1145.0",
+    "magic-sdk": "^8.1.1",
     "mongodb": "^4.5.0",
     "next": "12.1.0",
     "react": "17.0.2",
