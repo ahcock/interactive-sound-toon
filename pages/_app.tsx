@@ -2,8 +2,6 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { GlobalStyle } from "../styles/globalStyle";
 import { GlobalNavBar } from "../components/globalNavBar/globalNavBar.component";
-import { magicClient } from "../lib/magicClient";
-import { useEffect } from "react";
 import { WithMagicAuth } from "../components/withMagicAuth";
 
 type CustomPageProps = {
@@ -11,11 +9,13 @@ type CustomPageProps = {
 };
 
 function MyApp({ Component, pageProps }: AppProps<CustomPageProps>) {
-  useEffect(() => {
-    if (magicClient) {
-      magicClient.user.logout();
-    }
-  }, []);
+  // TODO: 임시 로그아웃 기능. 추후 로그아웃 기능을 만들어야 함
+  // useEffect(() => {
+  //   if (magicClient) {
+  //     magicClient.user.logout();
+  //   }
+  // }, []);
+
   return (
     <>
       <GlobalStyle />

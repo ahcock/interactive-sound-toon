@@ -36,7 +36,6 @@ const getStaticProps: GetStaticProps = async () => {
   return {
     props: {
       allImageInfoForWebtoonCard,
-      isPagePrivate: true,
     },
   };
 };

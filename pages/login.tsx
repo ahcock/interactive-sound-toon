@@ -39,7 +39,7 @@ const Login = () => {
       });
 
       if (res.status === 200) {
-        router.push(`/soundWebtoons?token=${didToken}`);
+        router.push("/soundWebtoons");
       }
     } catch (err) {
       console.log(err);
