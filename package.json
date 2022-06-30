@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@magic-sdk/admin": "^1.4.1",
     "@magic-sdk/types": "^7.1.1",
     "@types/styled-components": "^5.1.24",
     "aws-sdk": "^2.1145.0",

@@ -10,9 +10,12 @@ import {
 import { JSInput } from "../components/reusable/JSInput/JSInput.component";
 import { magicClient } from "../lib/magicClient";
 import { JSButton } from "../components/reusable/JSButton/JSButton.component";
+import { useRouter } from "next/router";
 
 const Login = () => {
   const [email, setEmail] = useState("");
+
+  const router = useRouter();
 
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -21,16 +24,23 @@ const Login = () => {
   const loginHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!email) {
-      return;
-    }
-
-    if (!magicClient) {
-      return;
-    }
+    // TODO: 뭔가 유의미한 error 처리를 해야할듯
+    if (!magicClient) return;
 
     try {
-      await magicClient.auth.loginWithMagicLink({ email });
+      const didToken = await magicClient.auth.loginWithMagicLink({ email });
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${didToken}`,
+        },
+      });
+
+      if (res.status === 200) {
+        router.push(`/soundWebtoons?token=${didToken}`);
+      }
     } catch (err) {
       console.log(err);
     }

@@ -2,6 +2,7 @@ import { FC } from "react";
 import { WebtoonCard } from "../../components/webtoonCard/webtoonCard.component";
 import { SoundWebtoonsContainer } from "../../styles/pageComponentStyles/soundWebtoonsPage.styles";
 import { mongoFindAllImageInfo } from "../../lib/mongo/mongoFindAllImageInfo";
+import { GetStaticProps } from "next";
 
 interface IWebtoonCardInfo {
   _id: string;
@@ -30,11 +31,12 @@ const SoundWebtoons: FC<ISoundWebtoonsProps> = ({
   );
 };
 
-const getStaticProps = async () => {
+const getStaticProps: GetStaticProps = async () => {
   const allImageInfoForWebtoonCard = await mongoFindAllImageInfo();
   return {
     props: {
       allImageInfoForWebtoonCard,
+      isPagePrivate: true,
     },
   };
 };
