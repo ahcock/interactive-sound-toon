@@ -101,6 +101,7 @@ const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       audioInfoDocument,
       imageInfoDocument,
+      isPagePrivate: true,
     },
   };
 };
