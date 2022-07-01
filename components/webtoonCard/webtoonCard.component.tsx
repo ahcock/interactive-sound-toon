@@ -7,7 +7,7 @@ import {
   WebtoonThumbnail,
   WebtoonTitle,
 } from "./webtoonCard.styles";
-import { IWebtoonCardInfo } from "../../pages/soundWebtoons";
+import { IWebtoonCardInfo } from "../../pages/create";
 
 interface IWebtoonCardProps {
   webtoonCardInfo: IWebtoonCardInfo;
@@ -16,12 +16,9 @@ interface IWebtoonCardProps {
 const WebtoonCard: FC<IWebtoonCardProps> = ({ webtoonCardInfo }) => {
   const { title, thumbnail, webtoonName, episode } = webtoonCardInfo;
 
-  // TODO: 아래 href의 url을 route 파일 같은 곳에서 한곳에서 관리해야 함
+  // TODO: 아래 href의 url을 route 파일 같은 곳에서 한곳에서 관리해야 함. create, soundWebtoons 페이지 별로 base route 따로 지정해야 함
   return (
-    <WebtoonCardContainer
-      href={`/soundWebtoons/${webtoonName}/${episode}`}
-      passHref
-    >
+    <WebtoonCardContainer href={`/create/${webtoonName}/${episode}`} passHref>
       <WebtoonCardInnerContainer>
         <StyledAnchor>
           <WebtoonTitle>{title}</WebtoonTitle>

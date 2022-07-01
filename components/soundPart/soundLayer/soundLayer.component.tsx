@@ -6,7 +6,7 @@ import {
 } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
-import { IAudioInfoDocument } from "../../../pages/soundWebtoons/[name]/[episode]";
+import { IAudioInfoDocument } from "../../../pages/create/[name]/[episode]";
 
 type GridInfo = {
   column: string;

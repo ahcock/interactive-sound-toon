@@ -39,7 +39,7 @@ const Login = () => {
       });
 
       if (res.status === 200) {
-        router.push("/soundWebtoons");
+        router.push("/create");
       }
     } catch (err) {
       console.log(err);
