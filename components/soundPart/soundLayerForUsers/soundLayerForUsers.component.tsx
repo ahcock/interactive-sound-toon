@@ -9,7 +9,7 @@ import {
   SoundLayerSection,
   StyledAudio,
 } from "../soundLayer/soundLayer.styles";
-import { AudioElementForUserComponent } from "../audioElementForUser/audioElementForUser.component";
+import { AudioElementWrapper } from "../audioElementWrapper/audioElementWrapper.component";
 
 interface IGridLayout
   extends Pick<ISoundGridDataForCreator, "index" | "gridPosition"> {}
@@ -23,23 +23,6 @@ interface ISoundGridDataForUsers extends IGridLayout {
   soundInfo?: SoundInfoForUsers;
 }
 
-/*
- * TODO: 일반 유저에게 필요한 것
- *  (1) 사운드 그리드 나누는 것
- *  (2) 보이지 않는 오디오 엘레멘트 렌더링
- *  (3) AudioAPITracks ref
- *  (4) Audio Context state
- *  (5) isSoundAgreed state
- *  (6) soundRefs ref
- * 그냥 코넽이너에서 그리드 나누고
- * 그거에 맞게 보이지 않는 오디오 엘레멘트를 나누고
- * 모달 보여주고 플레이 시키면 됨
- * (1)
- *
- * TODO: 필요 없는 것
- *  (1) 사운드 등록 모달
- *  (2) 사운드 그리그 콤포넌트 (border 보여주는 거 필요 없음)
- * */
 const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
   audioInfoDocument,
@@ -77,7 +60,6 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
         }
       }
 
-      // TODO 여기서 필요한건 ISoundGridData가 아니라 보이지 않는 Audio엘레멘트 일뿐
       if (!!audioInfoDocument) {
         (async () => {
           for (const {
@@ -208,10 +190,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
         };
 
         return (
-          <AudioElementForUserComponent
-            key={index + title}
-            gridInfo={gridPosition}
-          >
+          <AudioElementWrapper key={index + title} gridInfo={gridPosition}>
             <StyledAudio
               ref={refCallback}
               data-name={title}
@@ -222,7 +201,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
             >
               <source src={src} />
             </StyledAudio>
-          </AudioElementForUserComponent>
+          </AudioElementWrapper>
         );
       })}
     </SoundLayerSection>

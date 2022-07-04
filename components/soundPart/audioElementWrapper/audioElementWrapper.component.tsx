@@ -1,12 +1,12 @@
 import { FC } from "react";
 import { GridInfo } from "../soundLayer/soundLayer.component";
-import { AudioElementContainer } from "./audioElementForUser.styles";
+import { AudioElementContainer } from "./audioElementWrapper.styles";
 
-interface IAudioElementContainer {
+interface IAudioElementWrapperProps {
   gridInfo: GridInfo;
 }
 
-const AudioElementForUserComponent: FC<IAudioElementContainer> = ({
+const AudioElementWrapper: FC<IAudioElementWrapperProps> = ({
   children,
   gridInfo,
 }) => {
@@ -17,4 +17,4 @@ const AudioElementForUserComponent: FC<IAudioElementContainer> = ({
   );
 };
 
-export { AudioElementForUserComponent };
+export { AudioElementWrapper };

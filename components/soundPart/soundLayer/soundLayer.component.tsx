@@ -156,7 +156,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
       setSoundGridData(soundGridInfo);
     },
-    [audioInfoDocument.audioInfo]
+    [audioInfoDocument]
   );
 
   useEffect(
@@ -299,6 +299,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       setSoundGridData(newSoundGridData);
     }
   };
+
+  //TODO: 버그 발견 사운드 그리드 콤포넌트 클릭시 모달에서 한가지 사운드로만 인식 됨
 
   const onSoundDelete: OnSoundDelete = (gridPosition: GridInfo) => {
     if (!!soundGridData) {

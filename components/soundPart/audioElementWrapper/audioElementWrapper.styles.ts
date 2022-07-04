@@ -10,9 +10,6 @@ export const AudioElementContainer = styled.div.attrs(
     style: {
       gridColumn: gridInfo.column,
       gridRow: gridInfo.row,
-      // display: "flex",
-      // justifyContent: "center",
-      // alignItems: "center",
     },
   })
 )`
