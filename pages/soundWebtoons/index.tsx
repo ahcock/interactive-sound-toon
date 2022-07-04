@@ -25,6 +25,7 @@ const SoundWebtoons: FC<ISoundWebtoonsProps> = ({
         <WebtoonCard
           key={webtoonCardInfo._id}
           webtoonCardInfo={webtoonCardInfo}
+          forUsers
         />
       ))}
     </SoundWebtoonsContainer>

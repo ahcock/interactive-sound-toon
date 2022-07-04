@@ -16,6 +16,7 @@ type CustomGetServerSideProps = GetServerSideProps<CustomPageProps>;
 
 function MyApp({ Component, pageProps }: AppProps<CustomPageProps>) {
   // TODO: 임시 로그아웃 기능. 추후 로그아웃 기능을 만들어야 함
+
   // useEffect(() => {
   //   if (magicClient) {
   //     magicClient.user.logout();

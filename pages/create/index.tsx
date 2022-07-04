@@ -16,9 +16,7 @@ interface ISoundWebtoonsProps {
   allImageInfoForWebtoonCard: IWebtoonCardInfo[];
 }
 
-const SoundWebtoons: FC<ISoundWebtoonsProps> = ({
-  allImageInfoForWebtoonCard,
-}) => {
+const Create: FC<ISoundWebtoonsProps> = ({ allImageInfoForWebtoonCard }) => {
   return (
     <SoundWebtoonsContainer>
       {allImageInfoForWebtoonCard.map((webtoonCardInfo) => (
@@ -41,6 +39,6 @@ const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-export default SoundWebtoons;
+export default Create;
 export { getStaticProps };
 export type { IWebtoonCardInfo };
