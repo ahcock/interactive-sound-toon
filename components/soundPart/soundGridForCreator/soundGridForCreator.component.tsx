@@ -6,7 +6,7 @@ import {
   SavedSound,
 } from "../soundLayer/soundLayer.component";
 
-interface GridForSoundCreatorProps {
+interface IGridForSoundCreatorProps {
   showGrid?: boolean;
   gridPosition: GridInfo;
   onGridClick: OnGridClick;
@@ -14,7 +14,7 @@ interface GridForSoundCreatorProps {
   savedSound?: SavedSound;
 }
 
-const GridForSoundCreator: FC<GridForSoundCreatorProps> = ({
+const GridForSoundCreator: FC<IGridForSoundCreatorProps> = ({
   showGrid = false,
   gridPosition,
   onGridClick,

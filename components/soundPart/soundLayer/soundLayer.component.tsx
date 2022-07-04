@@ -53,28 +53,32 @@ interface ISoundLayerProps {
   audioInfoDocument: IAudioInfoDocument;
 }
 
-interface ISoundGridData {
+interface SoundInfo {
+  file?: File;
+  src?: string;
+  title: string;
+  fileName?: string;
+  volume?: number;
+  onSoundContainerClick: () => void;
+  action?: string;
+  isSoundAlreadyUploaded?: boolean;
+}
+
+interface ISoundGridDataForCreator {
   index: number;
   gridPosition: GridInfo;
   showGrid: boolean;
   onGridClick: OnGridClick;
-  soundInfo?: {
-    file?: File;
-    src?: string;
-    title: string;
-    fileName?: string;
-    volume?: number;
-    onSoundContainerClick: () => void;
-    action?: string;
-    isSoundAlreadyUploaded?: boolean;
-  };
+  soundInfo?: SoundInfo;
 }
 
 const SoundLayer: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
   audioInfoDocument,
 }) => {
-  const [soundGridData, setSoundGridData] = useState<ISoundGridData[]>([]);
+  const [soundGridData, setSoundGridData] = useState<
+    ISoundGridDataForCreator[]
+  >([]);
   const [soundModalStatus, setSoundModalStatus] = useState<ISoundModalStatus>({
     isModalOpen: false,
     modalOpenedGridPosition: {
@@ -102,7 +106,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   useEffect(
     function registerSoundGrid() {
-      const soundGridInfo: ISoundGridData[] = [];
+      const soundGridInfo: ISoundGridDataForCreator[] = [];
 
       for (let i = 1; i < 201; i++) {
         for (let j = 1; j < 11; j++) {
@@ -152,7 +156,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
       setSoundGridData(soundGridInfo);
     },
-    [audioInfoDocument.audioInfo]
+    [audioInfoDocument]
   );
 
   useEffect(
@@ -259,7 +263,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     if (!!file) {
       const audioUrl = URL.createObjectURL(file);
 
-      const gridDataWithSound: ISoundGridData = {
+      const gridDataWithSound: ISoundGridDataForCreator = {
         index: soundModalStatus.clickedGridIndex,
         gridPosition: soundModalStatus.modalOpenedGridPosition,
         showGrid: true,
@@ -296,6 +300,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     }
   };
 
+  //TODO: 버그 발견 사운드 그리드 콤포넌트 클릭시 모달에서 한가지 사운드로만 인식 됨
+
   const onSoundDelete: OnSoundDelete = (gridPosition: GridInfo) => {
     if (!!soundGridData) {
       const newSoundGridData = [...soundGridData];
@@ -315,7 +321,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   };
 
   const onAdditionalEventSave: OnAdditionalEventSave = (soundName, action) => {
-    const gridDataWithSound: ISoundGridData = {
+    const gridDataWithSound: ISoundGridDataForCreator = {
       index: soundModalStatus.clickedGridIndex,
       gridPosition: soundModalStatus.modalOpenedGridPosition,
       showGrid: true,
@@ -344,8 +350,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     const savedSound = soundGridData.filter((gridData) => gridData.soundInfo);
 
     const { unUploadedSound, alreadyUploadedSound } = savedSound.reduce<{
-      unUploadedSound: ISoundGridData[];
-      alreadyUploadedSound: ISoundGridData[];
+      unUploadedSound: ISoundGridDataForCreator[];
+      alreadyUploadedSound: ISoundGridDataForCreator[];
     }>(
       ({ unUploadedSound, alreadyUploadedSound }, sound) => {
         sound.soundInfo?.isSoundAlreadyUploaded
@@ -419,7 +425,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         ...newlyUploadedSound,
       ];
 
-      // TODO: 배포됐을 때 base url과 development 상황 때 base url을 환경변수로 구분해주어야 함.
       await fetch(`/api/mongoUpsertAudioInfo`, {
         method: "POST",
         headers: {
@@ -486,6 +491,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
 export { SoundLayer };
 export type {
+  ISoundLayerProps,
+  ISoundGridDataForCreator,
   OnGridClick,
   OnSoundSave,
   ISoundModalStatus,
@@ -494,4 +501,5 @@ export type {
   OnSoundDelete,
   ISoundRefs,
   OnAdditionalEventSave,
+  SoundInfo,
 };

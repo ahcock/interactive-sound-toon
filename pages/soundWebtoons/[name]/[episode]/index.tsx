@@ -3,12 +3,10 @@ import { mongoFindAudioInfoDocument } from "../../../../lib/mongo/mongoFindAudio
 import { mongoFindImageInfoDocument } from "../../../../lib/mongo/mongoFindImageInfoDocument";
 import { mongoFindAllSoundWebtoons } from "../../../../lib/mongo/mongoFindAllSoundWebtoons";
 import ImageLayer from "../../../../components/imageLayer/imageLayer.component";
-import {
-  GridInfo,
-  SoundLayer,
-} from "../../../../components/soundPart/soundLayer/soundLayer.component";
+import { GridInfo } from "../../../../components/soundPart/soundLayer/soundLayer.component";
 import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
 import { GetStaticProps } from "next";
+import { SoundLayerForUsers } from "../../../../components/soundPart/soundLayerForUsers/soundLayerForUsers.component";
 
 interface ITotalImageDimensionType {
   width: number;
@@ -70,7 +68,7 @@ const SoundWebtoon: FC<ISoundWebtoonProps> = ({
         imageSources={imageInfoDocument.sources}
         ref={imagesContainerRef}
       />
-      <SoundLayer
+      <SoundLayerForUsers
         imageLayerDimension={imageLayerDimension}
         audioInfoDocument={audioInfoDocument}
       />

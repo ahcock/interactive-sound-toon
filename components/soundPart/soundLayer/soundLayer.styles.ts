@@ -35,7 +35,10 @@ export const SoundContainer = styled.div`
 `;
 
 export const StyledAudio = styled.audio`
+  width: 100%;
+  height: 100%;
   visibility: hidden;
+
   //&::-webkit-media-controls-panel {
   //  background-color: #56aeff;
   //}
