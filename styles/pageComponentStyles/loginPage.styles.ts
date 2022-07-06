@@ -26,6 +26,7 @@ export const LoginPageTitle = styled.span`
   margin-bottom: 48px;
   color: var(--grey800);
   font-weight: bold;
+
   @media (min-width: 640px) {
     font-size: var(--font-size-h3);
   }
