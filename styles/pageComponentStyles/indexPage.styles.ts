@@ -1,26 +1,33 @@
 import styled from "styled-components";
 
 export const IndexPageContainer = styled.main`
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 100%;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const IndexPageSection = styled.section`
   display: flex;
   padding: 75px 0;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: auto;
 `;
 
 export const IndexPageImageContainer = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
+  position: relative;
   width: 100%;
   //border-bottom: 8px solid #222;
   color: var(--white);
   height: 471px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   @media (min-width: 950px) {
     height: 688px;
@@ -71,35 +78,28 @@ export const IndexTitle = styled.h1`
   max-width: 670px;
 
   @media (max-width: 549px) {
-    font-size: 1.6rem;
+    font-size: 2rem;
   }
 
   @media (min-width: 550px) and (max-width: 1449px) {
-    font-size: 3.1rem;
+    font-size: 3.5rem;
   }
 
   @media (min-width: 1450px) {
-    font-size: 4rem;
+    font-size: 4.2rem;
   } ;
 `;
 
-export const IndexSubtitle = styled.h2`
+export const IndexSubtitle = styled.h2<{ fontSize?: string }>`
   margin: 1rem auto;
   max-width: 670px;
-  background: linear-gradient(to right, #121fcf 13%, #cf0a3f 98%);
+  background: linear-gradient(to right, #121fcf 13%, #1c2c59 98%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  //font-weight: 600;
-  //
-  //@media (max-width: 549px) {
-  //  font-size: 1.6rem;
-  //}
-  //
-  //@media (min-width: 550px) and (max-width: 1449px) {
-  //  font-size: 3.1rem;
-  //}
-  //
-  //@media (min-width: 1450px) {
-  //  font-size: 4rem;
-  //} ;
+  font-size: ${({ fontSize }) => fontSize || "1,1rem"};
+  font-weight: 1000;
+
+  @media (min-width: 550px) {
+    font-size: ${({ fontSize }) => fontSize || "1,6rem"};
+  }
 `;
