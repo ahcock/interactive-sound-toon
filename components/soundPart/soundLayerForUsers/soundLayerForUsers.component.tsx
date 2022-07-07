@@ -1,9 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import {
-  ISoundGridDataForCreator,
   ISoundLayerProps,
   ISoundRefs,
-  SoundInfo,
 } from "../soundLayer/soundLayer.component";
 import {
   SoundLayerSection,
@@ -11,25 +9,10 @@ import {
 } from "../soundLayer/soundLayer.styles";
 import { AudioElementWrapper } from "../audioElementWrapper/audioElementWrapper.component";
 
-interface IGridLayout
-  extends Pick<ISoundGridDataForCreator, "index" | "gridPosition"> {}
-
-type SoundInfoForUsers = Omit<
-  SoundInfo,
-  "onSoundContainerClick" | "isSoundAlreadyUploaded"
->;
-
-interface ISoundGridDataForUsers extends IGridLayout {
-  soundInfo?: SoundInfoForUsers;
-}
-
 const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
   audioInfoDocument,
 }) => {
-  const [soundGridData, setSoundGridData] = useState<ISoundGridDataForUsers[]>(
-    []
-  );
   const [isSoundAgreed, setIsSoundAgreed] = useState(false);
   const [audioContext, setAudioContext] = useState<AudioContext>();
 
@@ -48,56 +31,11 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   }, []);
 
   useEffect(
-    function registerSoundGrid() {
-      const gridLayout: ISoundGridDataForUsers[] = [];
-
-      for (let i = 1; i < 201; i++) {
-        for (let j = 1; j < 11; j++) {
-          gridLayout.push({
-            index: gridLayout.length,
-            gridPosition: { row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` },
-          });
-        }
-      }
-
-      if (!!audioInfoDocument) {
-        (async () => {
-          for (const {
-            index,
-            gridPosition,
-            title,
-            src,
-            volume,
-            fileName,
-            action,
-          } of audioInfoDocument.audioInfo) {
-            gridLayout[index] = {
-              gridPosition,
-              index,
-              soundInfo: {
-                title,
-                volume,
-                fileName,
-                src,
-                ...(action && { action }),
-              },
-            };
-          }
-        })();
-      }
-
-      setSoundGridData(gridLayout);
-    },
-    [audioInfoDocument, audioInfoDocument.audioInfo]
-  );
-
-  useEffect(
     function setIntersectionObserver() {
       if (!!soundRefs && !!soundRefs.current) {
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
-              //TODO: https://bobbyhadz.com/blog/javascript-get-all-attributes-of-element 적용
               const soundName = entry.target.getAttribute("data-name");
               const action = entry.target.getAttribute("data-action");
               const volume = entry.target.getAttribute("data-volume") || "1";
@@ -137,7 +75,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
         }
       }
     },
-    [isSoundAgreed, soundGridData]
+    [isSoundAgreed, audioInfoDocument, audioInfoDocument.audioInfo]
   );
 
   const refCallback = (audioNode: HTMLAudioElement) => {
@@ -180,14 +118,8 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   return (
     <SoundLayerSection height={height} width={width}>
       <button onClick={soundPlayConsentHandler}>사운드 들을랴?</button>
-      {soundGridData.map((data) => {
-        const { index, gridPosition, soundInfo } = data;
-        const { title, action, volume, src } = soundInfo || {
-          title: "",
-          action: "",
-          volume: 1,
-          src: "",
-        };
+      {audioInfoDocument.audioInfo.map((data) => {
+        const { index, gridPosition, title, action, volume, src } = data;
 
         return (
           <AudioElementWrapper key={index + title} gridInfo={gridPosition}>
