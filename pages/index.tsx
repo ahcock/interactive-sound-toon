@@ -21,6 +21,7 @@ const Home: NextPage = () => {
             src="/images/index_background.jpg"
             alt="첫 페이지 배경 그림"
             layout="fill"
+            priority
           />
           <BackgroundGradient />
           <IndexTextSection>
@@ -43,8 +44,8 @@ const Home: NextPage = () => {
       </IndexPageSection>
 
       <IndexPageSection>
-        <Image src={sampleImage0} alt="첫번째 샘플 이미지" />
-        <Image alt="두번째 샘플 이미지" src={sampleImage1} />
+        <Image src={sampleImage0} alt="첫번째 샘플 이미지" priority />
+        <Image alt="두번째 샘플 이미지" src={sampleImage1} priority />
       </IndexPageSection>
     </IndexPageContainer>
   );
