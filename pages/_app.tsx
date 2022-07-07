@@ -1,4 +1,3 @@
-import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { GlobalStyle } from "../styles/globalStyle";
 import { GlobalNavBar } from "../components/globalNavBar/globalNavBar.component";

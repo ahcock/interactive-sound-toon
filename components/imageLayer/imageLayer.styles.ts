@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const ImageLayerSection = styled.section`
-  padding: 0 135px;
+  //padding: 0 135px;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -10,7 +10,7 @@ export const ImageLayerSection = styled.section`
 
 export const ImageWrapper = styled.div`
   position: relative;
-  width: 100%;
-  aspect-ratio: 69 / 160;
+  min-width: 200px;
+  //aspect-ratio: auto;
   min-height: 600px;
 `;

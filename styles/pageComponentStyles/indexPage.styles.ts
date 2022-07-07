@@ -96,10 +96,10 @@ export const IndexSubtitle = styled.h2<{ fontSize?: string }>`
   background: linear-gradient(to right, #121fcf 13%, #1c2c59 98%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-size: ${({ fontSize }) => fontSize || "1,1rem"};
+  font-size: ${({ fontSize }) => fontSize || "1.1rem"};
   font-weight: 1000;
 
   @media (min-width: 550px) {
-    font-size: ${({ fontSize }) => fontSize || "1,6rem"};
+    font-size: ${({ fontSize }) => fontSize || "1.6rem"};
   }
 `;

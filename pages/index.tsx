@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import sampleImage0 from "/public/images/index_sample_0.jpeg";
 import sampleImage1 from "/public/images/index_sample_1.jpeg";
 import {
@@ -46,6 +47,13 @@ const Home: NextPage = () => {
       <IndexPageSection>
         <Image src={sampleImage0} alt="첫번째 샘플 이미지" priority />
         <Image alt="두번째 샘플 이미지" src={sampleImage1} priority />
+      </IndexPageSection>
+
+      {/*인터섹션 옵져버*/}
+      <IndexPageSection>
+        <Link href="/soundWebtoons">
+          <a>사운드 웹툰 보러 가기</a>
+        </Link>
       </IndexPageSection>
     </IndexPageContainer>
   );
