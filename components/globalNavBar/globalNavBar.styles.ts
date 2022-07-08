@@ -1,10 +1,11 @@
 import styled from "styled-components";
 
 export const LayoutContainer = styled.main`
-  width: 100vw;
+  width: 100%;
   display: flex;
   padding: 2px 0;
   flex-direction: column;
+  position: relative;
 `;
 
 export const HeaderContainer = styled.header`
