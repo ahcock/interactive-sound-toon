@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-const nextConfig = {
+module.exports = {
   reactStrictMode: true,
   compiler: {
     styledComponents: true,
@@ -17,5 +17,3 @@ const nextConfig = {
     domains: [process.env.S3_DOMAIN],
   },
 };
-
-module.exports = nextConfig;
