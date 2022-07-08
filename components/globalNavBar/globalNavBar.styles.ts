@@ -52,7 +52,7 @@ export const StyledUl = styled.ul`
 
   @media screen and (max-width: 768px) {
     align-items: center;
-    gap: 10px;
+    max-height: 73%;
   } ;
 `;
 
