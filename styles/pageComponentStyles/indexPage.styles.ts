@@ -29,11 +29,11 @@ export const IndexPageImageContainer = styled.div`
   justify-content: center;
   align-items: center;
 
-  @media screen and(min-width: 950px) {
+  @media screen and (min-width: 950px) {
     height: 688px;
   }
 
-  @media screen and(min-width: 740px) and (max-width: 949px) {
+  @media screen and (min-width: 740px) and (max-width: 949px) {
     height: 713px;
   }
 
@@ -41,7 +41,7 @@ export const IndexPageImageContainer = styled.div`
     height: 744px;
   }
 
-  @media screen and(min-width: 550px) and (max-width: 589px) {
+  @media screen and (min-width: 550px) and (max-width: 589px) {
     height: 500px;
   }
 `;
