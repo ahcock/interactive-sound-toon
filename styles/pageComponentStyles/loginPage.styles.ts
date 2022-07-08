@@ -12,11 +12,11 @@ export const LoginPageMain = styled.main`
 `;
 
 export const LoginPageTitleContainer = styled.div`
-  @media (min-width: 640px) {
+  @media screen and (min-width: 640px) {
     padding-top: 74px;
   }
 
-  @media (max-width: 639px) {
+  @media screen and (max-width: 639px) {
     padding-top: 18px;
   }
 `;
@@ -27,15 +27,15 @@ export const LoginPageTitle = styled.span`
   color: var(--grey800);
   font-weight: bold;
 
-  @media (min-width: 640px) {
+  @media screen and (min-width: 640px) {
     font-size: var(--font-size-h3);
   }
 
-  @media (min-width: 640px) and (max-width: 1023px) {
+  @media screen and (min-width: 640px) and (max-width: 1023px) {
     font-size: var(--font-size-h4);
   }
 
-  @media (max-width: 639px) {
+  @media screen and (max-width: 639px) {
     margin: 24px 0;
     font-size: var(--font-size-h5);
   }

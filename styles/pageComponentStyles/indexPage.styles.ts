@@ -29,19 +29,19 @@ export const IndexPageImageContainer = styled.div`
   justify-content: center;
   align-items: center;
 
-  @media (min-width: 950px) {
+  @media screen and (min-width: 950px) {
     height: 688px;
   }
 
-  @media (min-width: 740px) and (max-width: 949px) {
+  @media screen and (min-width: 740px) and (max-width: 949px) {
     height: 713px;
   }
 
-  @media (min-width: 590px) and (max-width: 739px) {
+  @media screen and (min-width: 590px) and (max-width: 739px) {
     height: 744px;
   }
 
-  @media (min-width: 550px) and (max-width: 589px) {
+  @media screen and (min-width: 550px) and (max-width: 589px) {
     height: 500px;
   }
 `;
@@ -52,7 +52,6 @@ export const BackgroundGradient = styled.div`
   right: 0;
   width: 100%;
   height: 100%;
-  //background: rgba(255, 255, 255, 0.1);
   background: linear-gradient(
     180deg,
     white 0%,
@@ -77,15 +76,15 @@ export const IndexTitle = styled.h1`
   margin: 0 auto;
   max-width: 670px;
 
-  @media (max-width: 549px) {
+  @media screen and (max-width: 549px) {
     font-size: 2rem;
   }
 
-  @media (min-width: 550px) and (max-width: 1449px) {
+  @media screen and (min-width: 550px) and (max-width: 1449px) {
     font-size: 3.5rem;
   }
 
-  @media (min-width: 1450px) {
+  @media screen and (min-width: 1450px) {
     font-size: 4.2rem;
   } ;
 `;
@@ -99,7 +98,7 @@ export const IndexSubtitle = styled.h2<{ fontSize?: string }>`
   font-size: ${({ fontSize }) => fontSize || "1.1rem"};
   font-weight: 1000;
 
-  @media (min-width: 550px) {
+  @media screen and (min-width: 550px) {
     font-size: ${({ fontSize }) => fontSize || "1.6rem"};
   }
 `;

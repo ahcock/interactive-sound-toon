@@ -13,7 +13,7 @@ export const StyledButton = styled.button`
     background-color: var(--blue700);
   }
 
-  @media (max-width: 639px) {
+  @media screen and(max-width: 639px) {
     padding: 14px 18px;
     font-size: 15px;
     line-height: 1.2rem;
