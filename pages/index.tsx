@@ -1,74 +1,61 @@
 import type { NextPage } from "next";
-import Head from "next/head";
 import Image from "next/image";
-import styles from "../styles/Home.module.css";
+import Link from "next/link";
+import sampleImage0 from "/public/images/index_sample_0.jpeg";
+import sampleImage1 from "/public/images/index_sample_1.jpeg";
+import {
+  BackgroundGradient,
+  IndexPageContainer,
+  IndexPageImageContainer,
+  IndexPageSection,
+  IndexSubtitle,
+  IndexTextSection,
+  IndexTitle,
+} from "../styles/pageComponentStyles/indexPage.styles";
 
 const Home: NextPage = () => {
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Interactive Sound Toon</title>
-        <meta
-          name="description"
-          content="Webtoon with interactive sound contents"
-        />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <IndexPageContainer>
+      <IndexPageSection>
+        <IndexPageImageContainer>
+          <Image
+            src="/images/index_background.jpg"
+            alt="첫 페이지 배경 그림"
+            layout="fill"
+            priority
+          />
+          <BackgroundGradient />
+          <IndexTextSection>
+            <IndexTitle>웹툰과 사운드가 만난다면</IndexTitle>
+            <IndexSubtitle>
+              주인공의 발자국 소리를 나도 들을 수 있다면
+            </IndexSubtitle>
+            <IndexSubtitle>떨어지는 빗소리를 나도 들을 수 있다면</IndexSubtitle>
+          </IndexTextSection>
+        </IndexPageImageContainer>
+      </IndexPageSection>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+      <IndexPageSection>
+        <IndexTextSection>
+          <IndexSubtitle fontSize="2rem">만약에 이런 웹툰에서</IndexSubtitle>
+          <IndexSubtitle fontSize="2rem">
+            이런 소리가 날 수 있다면
+          </IndexSubtitle>
+        </IndexTextSection>
+      </IndexPageSection>
 
-        <p className={styles.description}>
-          Get started by editing{" "}
-          <code className={styles.code}>pages/index.tsx</code>
-        </p>
+      <IndexPageSection>
+        <Image src={sampleImage0} alt="첫번째 샘플 이미지" priority />
+        <Image alt="두번째 샘플 이미지" src={sampleImage1} priority />
+      </IndexPageSection>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
-    </div>
+      {/*인터섹션 옵져버*/}
+      <IndexPageSection>
+        <Link href="/soundWebtoons">
+          <a>사운드 웹툰 보러 가기</a>
+        </Link>
+      </IndexPageSection>
+    </IndexPageContainer>
   );
 };
 

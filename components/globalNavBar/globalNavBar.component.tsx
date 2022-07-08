@@ -1,11 +1,12 @@
 import { FC } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  LayoutContainer,
   HeaderContainer,
-  HeadingTitle,
-  StyledNav,
+  LayoutContainer,
+  LogoContainer,
   StyledLink,
+  StyledNav,
   StyledUl,
 } from "./globalNavBar.styles";
 
@@ -13,7 +14,18 @@ const GlobalNavBar: FC = ({ children }) => {
   return (
     <LayoutContainer>
       <HeaderContainer>
-        <HeadingTitle>Interactive</HeadingTitle>
+        <Link href="/" passHref>
+          <StyledLink noPadding>
+            <LogoContainer>
+              <Image
+                src="/favicon.png"
+                alt="logo"
+                layout="fill"
+                objectFit="contain"
+              />
+            </LogoContainer>
+          </StyledLink>
+        </Link>
         <StyledNav>
           <StyledUl>
             <li>
