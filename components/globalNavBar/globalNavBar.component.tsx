@@ -1,21 +1,40 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   HeaderContainer,
   LayoutContainer,
+  LogoAnchor,
   LogoContainer,
-  StyledLink,
+  MenuContainer,
+  StyledAnchor,
+  StyledLi,
   StyledNav,
   StyledUl,
 } from "./globalNavBar.styles";
+import Menu from "/images/svg/menu.svg";
+import Close from "/images/svg/close.svg";
+import { useRouter } from "next/router";
 
 const GlobalNavBar: FC = ({ children }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const { asPath, events } = useRouter();
+
+  useEffect(
+    function navMenuOpenHandler() {
+      events.on("routeChangeStart", () => setIsMenuOpen(false));
+
+      return events.off("routeChangeStart", () => setIsMenuOpen(false));
+    },
+    [asPath, events]
+  );
+
   return (
     <LayoutContainer>
       <HeaderContainer>
         <Link href="/" passHref>
-          <StyledLink noPadding>
+          <LogoAnchor>
             <LogoContainer>
               <Image
                 src="/favicon.png"
@@ -24,28 +43,33 @@ const GlobalNavBar: FC = ({ children }) => {
                 objectFit="contain"
               />
             </LogoContainer>
-          </StyledLink>
+          </LogoAnchor>
         </Link>
-        <StyledNav>
+        <StyledNav isMenuOpen={isMenuOpen}>
           <StyledUl>
-            <li>
+            <StyledLi>
               <Link href="/" passHref>
-                <StyledLink>Home</StyledLink>
+                <StyledAnchor>Home</StyledAnchor>
               </Link>
-            </li>
-            <li>
+            </StyledLi>
+            <StyledLi>
               <Link href="/soundWebtoons" passHref>
-                <StyledLink>Sound Webtoons</StyledLink>
+                <StyledAnchor>Sound Webtoons</StyledAnchor>
               </Link>
-            </li>
-            <li>
+            </StyledLi>
+            <StyledLi>
               <Link href="/create" passHref>
-                <StyledLink>CREATE</StyledLink>
+                <StyledAnchor>CREATE</StyledAnchor>
               </Link>
-            </li>
+            </StyledLi>
           </StyledUl>
         </StyledNav>
+
+        <MenuContainer onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          {isMenuOpen ? <Close style={{ fontSize: "32px" }} /> : <Menu />}
+        </MenuContainer>
       </HeaderContainer>
+
       {children}
     </LayoutContainer>
   );
