@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  reactStrictMode: true,
+  compiler: {
+    styledComponents: true,
+  },
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
@@ -11,12 +15,6 @@ const nextConfig = {
   },
   images: {
     domains: [process.env.S3_DOMAIN],
-  },
-  reactStrictMode: true,
-  compiler: {
-    styledComponents: {
-      ssr: true,
-    },
   },
 };
 
