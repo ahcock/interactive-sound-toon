@@ -13,10 +13,10 @@ export const HeaderContainer = styled.header`
   width: 100%;
   display: flex;
   z-index: 2;
+  height: initial;
+  max-height: 100vh;
 
   @media screen and (max-width: 768px) {
-    height: initial;
-    max-height: 100vh;
     flex-direction: column;
   } ;
 `;
