@@ -1,40 +1,36 @@
 import styled from "styled-components";
-import Link from "next/link";
 import Image from "next/image";
 
-export const WebtoonCardContainer = styled(Link)``;
-
-export const WebtoonCardInnerContainer = styled.div`
-  width: 100%;
-  max-width: 550px;
-  min-width: 400px;
-  height: 190px;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: 1fr;
-  cursor: pointer;
-  border: 1px solid rgba(55, 53, 47, 0.16);
+export const StyledAnchor = styled.a`
+  padding: 1.1vw;
+  flex-basis: 70%;
+  max-width: 500px;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  height: max-content;
+  justify-content: space-between;
+  row-gap: 3vw;
   border-radius: 5px;
+  border: 1px solid #f2f2f2;
+
   &:hover {
     background-color: rgb(217, 238, 248);
   }
 `;
 
 export const WebtoonTitle = styled.h3`
-  fonst-size: 20px;
-`;
-
-export const StyledAnchor = styled.a`
-  padding: 14px;
-  display: flex;
+  flex: 6 1 60%;
+  max-width: fit-content;
+  font-size: 1.5vmax;
 `;
 
 export const ThumbnailContainer = styled.div`
-  width: 100%;
-  height: 100%;
+  flex-basis: 40%;
   position: relative;
+  max-height: fit-content;
 `;
 
-export const WebtoonThumbnail = styled(Image)`
+export const StyledImage = styled(Image)`
   border-radius: 5px;
 `;
