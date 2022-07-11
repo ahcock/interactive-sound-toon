@@ -12,7 +12,7 @@ export const StyledAnchor = styled.a`
   justify-content: space-between;
   row-gap: 3vw;
   border-radius: 5px;
-  border: 2px solid #f2f2f2;
+  border: 1px solid #f2f2f2;
 
   &:hover {
     background-color: rgb(217, 238, 248);
