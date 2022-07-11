@@ -75,6 +75,7 @@ export const IndexTextSection = styled.div`
 export const IndexTitle = styled.h1`
   margin: 0 auto;
   max-width: 670px;
+  font-weight: 650;
 
   @media screen and (max-width: 549px) {
     font-size: 2rem;
@@ -96,7 +97,7 @@ export const IndexSubtitle = styled.h2<{ fontSize?: string }>`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-size: ${({ fontSize }) => fontSize || "1.1rem"};
-  font-weight: 1000;
+  font-weight: 650;
 
   @media screen and (min-width: 550px) {
     font-size: ${({ fontSize }) => fontSize || "1.6rem"};
