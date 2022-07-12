@@ -15,6 +15,7 @@ import {
 import Menu from "/images/svg/menu.svg";
 import Close from "/images/svg/close.svg";
 import { useRouter } from "next/router";
+import { JSButton } from "../reusable/JSButton/JSButton.component";
 
 const GlobalNavBar: FC = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -61,6 +62,10 @@ const GlobalNavBar: FC = ({ children }) => {
               <Link href="/create" passHref>
                 <StyledAnchor>CREATE</StyledAnchor>
               </Link>
+            </StyledLi>
+
+            <StyledLi>
+              <JSButton small>Log Out</JSButton>
             </StyledLi>
           </StyledUl>
         </StyledNav>
