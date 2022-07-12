@@ -16,11 +16,20 @@ import Menu from "/images/svg/menu.svg";
 import Close from "/images/svg/close.svg";
 import { useRouter } from "next/router";
 import { JSButton } from "../reusable/JSButton/JSButton.component";
+import { magicClient } from "../../lib/magicClient";
 
-const GlobalNavBar: FC = ({ children }) => {
+interface IGlobalNavBarProps {
+  isUserLoggedIn?: boolean;
+}
+
+const GlobalNavBar: FC<IGlobalNavBarProps> = ({
+  children,
+  isUserLoggedIn = false,
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const { asPath, events } = useRouter();
+  console.log({ isUserLoggedIn });
+  const { asPath, events, push } = useRouter();
 
   useEffect(
     function navMenuOpenHandler() {
@@ -30,6 +39,13 @@ const GlobalNavBar: FC = ({ children }) => {
     },
     [asPath, events]
   );
+
+  const logoutHandler = async () => {
+    if (magicClient) {
+      await magicClient.user.logout();
+      push("/");
+    }
+  };
 
   return (
     <LayoutContainer>
@@ -64,9 +80,11 @@ const GlobalNavBar: FC = ({ children }) => {
               </Link>
             </StyledLi>
 
-            <StyledLi>
-              <JSButton small>Log Out</JSButton>
-            </StyledLi>
+            {isUserLoggedIn && (
+              <StyledLi onClick={logoutHandler}>
+                <JSButton small>Log Out</JSButton>
+              </StyledLi>
+            )}
           </StyledUl>
         </StyledNav>
 
