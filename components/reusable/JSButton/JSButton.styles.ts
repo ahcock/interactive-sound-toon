@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
-export const StyledButton = styled.button`
-  padding: 18px 28px;
+export const StyledButton = styled.button<{ small: boolean }>`
+  padding: ${({ small }) => (!small ? "18px 28px" : "14px 24px")};
   font-weight: 600;
   color: var(--grey50);
   background-color: var(--blue500);

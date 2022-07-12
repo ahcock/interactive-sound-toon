@@ -5,9 +5,15 @@ interface JSButtonProps
   extends DetailedHTMLProps<
     ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
-  > {}
-const JSButton: FC<JSButtonProps> = ({ children }, ...props) => {
-  return <StyledButton {...props}>{children}</StyledButton>;
+  > {
+  small?: boolean;
+}
+const JSButton: FC<JSButtonProps> = ({ children, small = false }, ...props) => {
+  return (
+    <StyledButton small={small} {...props}>
+      {children}
+    </StyledButton>
+  );
 };
 
 export { JSButton };

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { cloneElement, FC, useEffect, useState, isValidElement } from "react";
 import { magicClient } from "../lib/magicClient";
 import { AppInitialProps } from "next/dist/shared/lib/utils";
 import { useRouter } from "next/router";
@@ -15,7 +15,6 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
   children,
   pageProps: { isPagePrivate = false },
 }) => {
-  // const [user, setUser] = useState<UserModule>();
   const [isUserLoggedIn, setIsUserLoggedIn] = useState<undefined | boolean>();
   const router = useRouter();
 
@@ -35,7 +34,9 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
     [isPagePrivate, router]
   );
 
-  if (isUserLoggedIn || !isPagePrivate) return <>{children}</>;
+  // 유저 로그인 상태 전달
+  if (isValidElement(children) && (isUserLoggedIn || !isPagePrivate))
+    return cloneElement(children, { isUserLoggedIn });
 
   return <div>Loading...</div>;
 };

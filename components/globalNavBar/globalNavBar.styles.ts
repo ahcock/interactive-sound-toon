@@ -13,7 +13,6 @@ export const HeaderContainer = styled.header`
   width: 100%;
   display: flex;
   z-index: 2;
-  height: initial;
   max-height: 100vh;
 
   @media screen and (max-width: 768px) {
@@ -33,10 +32,12 @@ export const StyledNav = styled.nav<{ isMenuOpen?: boolean }>`
 
   @media screen and (max-width: 768px) {
     width: 100%;
+    height: 30vh;
     display: ${({ isMenuOpen }) => (isMenuOpen ? "block" : "none")};
     background: linear-gradient(
       180deg,
-      white 0%,
+      white 25%,
+      white 75%,
       white 59px,
       rgba(255, 255, 255, 0) 100%
     );
@@ -48,7 +49,7 @@ export const StyledUl = styled.ul`
   width: 100%;
   list-style: none;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
 
   @media screen and (max-width: 768px) {
     align-items: center;
@@ -60,6 +61,7 @@ export const StyledLi = styled.li`
   width: inherit;
   display: flex;
   justify-content: center;
+  align-items: center;
 `;
 
 export const StyledAnchor = styled.a`
@@ -83,6 +85,7 @@ export const LogoAnchor = styled.a`
 
 export const LogoContainer = styled.div`
   position: relative;
+  margin-left: 1.5vw;
   height: 4rem;
   width: 4rem;
 
@@ -105,7 +108,7 @@ export const LogoContainer = styled.div`
 export const MenuContainer = styled.span`
   position: absolute;
   top: 31px;
-  right: 32px;
+  right: 20px;
   display: none;
 
   @media screen and (max-width: 768px) {
