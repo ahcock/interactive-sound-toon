@@ -17,19 +17,17 @@ import Close from "/images/svg/close.svg";
 import { useRouter } from "next/router";
 import { JSButton } from "../reusable/JSButton/JSButton.component";
 import { magicClient } from "../../lib/magicClient";
+import { useDispatch, useSelector } from "react-redux";
+import { userLoggedOut } from "../../store/user/userSlice";
+import { RootState } from "../../store/store";
 
-interface IGlobalNavBarProps {
-  isUserLoggedIn?: boolean;
-}
-
-const GlobalNavBar: FC<IGlobalNavBarProps> = ({
-  children,
-  isUserLoggedIn = false,
-}) => {
+const GlobalNavBar: FC = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  console.log({ isUserLoggedIn });
   const { asPath, events, push } = useRouter();
+  const dispatch = useDispatch();
+  const isUserLoggedIn = useSelector(
+    (state: RootState) => state.user.isUserLoggedIn
+  );
 
   useEffect(
     function navMenuOpenHandler() {
@@ -43,6 +41,7 @@ const GlobalNavBar: FC<IGlobalNavBarProps> = ({
   const logoutHandler = async () => {
     if (magicClient) {
       await magicClient.user.logout();
+      dispatch(userLoggedOut());
       push("/");
     }
   };

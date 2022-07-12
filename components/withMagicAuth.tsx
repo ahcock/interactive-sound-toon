@@ -1,7 +1,10 @@
-import { cloneElement, FC, useEffect, useState, isValidElement } from "react";
+import { FC, useEffect } from "react";
 import { magicClient } from "../lib/magicClient";
 import { AppInitialProps } from "next/dist/shared/lib/utils";
 import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import { userLoggedOut } from "../store/user/userSlice";
+import { RootState } from "../store/store";
 
 type CustomPageProps = {
   isPagePrivate?: boolean;
@@ -15,8 +18,11 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
   children,
   pageProps: { isPagePrivate = false },
 }) => {
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState<undefined | boolean>();
   const router = useRouter();
+  const dispatch = useDispatch();
+  const isUserLoggedIn = useSelector(
+    (state: RootState) => state.user.isUserLoggedIn
+  );
 
   useEffect(
     function checkUserLoginStatus() {
@@ -26,17 +32,17 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
         }
 
         const isLoggedIn = await magicClient.user.isLoggedIn();
-        setIsUserLoggedIn(isLoggedIn);
 
-        if (!isLoggedIn && isPagePrivate) router.push("/login");
+        if (!isLoggedIn && isPagePrivate) {
+          dispatch(userLoggedOut());
+          router.push("/login");
+        }
       })();
     },
-    [isPagePrivate, router]
+    [dispatch, isPagePrivate, router]
   );
 
-  // 유저 로그인 상태 전달
-  if (isValidElement(children) && (isUserLoggedIn || !isPagePrivate))
-    return cloneElement(children, { isUserLoggedIn });
+  if (isUserLoggedIn || !isPagePrivate) return <>{children}</>;
 
   return <div>Loading...</div>;
 };
