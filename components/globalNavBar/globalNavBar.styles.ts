@@ -49,7 +49,7 @@ export const StyledUl = styled.ul`
   width: 100%;
   list-style: none;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
 
   @media screen and (max-width: 768px) {
     align-items: center;
@@ -85,6 +85,7 @@ export const LogoAnchor = styled.a`
 
 export const LogoContainer = styled.div`
   position: relative;
+  margin-left: 1.5vw;
   height: 4rem;
   width: 4rem;
 
@@ -107,7 +108,7 @@ export const LogoContainer = styled.div`
 export const MenuContainer = styled.span`
   position: absolute;
   top: 31px;
-  right: 32px;
+  right: 20px;
   display: none;
 
   @media screen and (max-width: 768px) {
