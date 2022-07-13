@@ -61,7 +61,7 @@ const GlobalNavBar: FC = ({ children }) => {
             </LogoContainer>
           </LogoAnchor>
         </Link>
-        <StyledNav isMenuOpen={isMenuOpen}>
+        <StyledNav isMenuOpen={isMenuOpen} isUserLoggedIn={isUserLoggedIn}>
           <StyledUl>
             <StyledLi>
               <Link href="/" passHref>
