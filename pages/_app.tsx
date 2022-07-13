@@ -23,11 +23,11 @@ function MyApp({ Component, pageProps }: AppProps<CustomPageProps>) {
       </Head>
       <GlobalStyle />
       <Provider store={store}>
-        <WithMagicAuth pageProps={pageProps}>
-          <GlobalNavBar>
+        <GlobalNavBar>
+          <WithMagicAuth pageProps={pageProps}>
             <Component {...pageProps} />
-          </GlobalNavBar>
-        </WithMagicAuth>
+          </WithMagicAuth>
+        </GlobalNavBar>
       </Provider>
     </>
   );

@@ -20,7 +20,10 @@ export const HeaderContainer = styled.header`
   } ;
 `;
 
-export const StyledNav = styled.nav<{ isMenuOpen?: boolean }>`
+export const StyledNav = styled.nav<{
+  isMenuOpen?: boolean;
+  isUserLoggedIn?: boolean;
+}>`
   flex-direction: inherit;
   width: 70%;
   display: flex;
@@ -32,7 +35,8 @@ export const StyledNav = styled.nav<{ isMenuOpen?: boolean }>`
 
   @media screen and (max-width: 768px) {
     width: 100%;
-    height: 30vh;
+    height: ${({ isUserLoggedIn }) => (isUserLoggedIn ? "40vh" : "25vh")};
+    max-height: max-content;
     display: ${({ isMenuOpen }) => (isMenuOpen ? "block" : "none")};
     background: linear-gradient(
       180deg,
