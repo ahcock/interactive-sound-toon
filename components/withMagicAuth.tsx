@@ -7,10 +7,6 @@ import { userLoggedOut } from "../store/user/userSlice";
 import { RootState } from "../store/store";
 import { Loader } from "./loader/loader.component";
 
-type CustomPageProps = {
-  isPagePrivate?: boolean;
-};
-
 interface IWithMagicAuth {
   pageProps: AppInitialProps["pageProps"];
 }
@@ -67,4 +63,3 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
 };
 
 export { WithMagicAuth };
-export type { CustomPageProps };
