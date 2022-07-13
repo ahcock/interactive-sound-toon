@@ -7,6 +7,7 @@ import {
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
 import { IAudioInfoDocument } from "../../../pages/create/[name]/[episode]";
+import { ConsentModal } from "../consentModal/consentModal.component";
 
 type GridInfo = {
   column: string;
@@ -33,6 +34,8 @@ type OnSoundSave = (
 type OnSoundDelete = (gridPosition: GridInfo) => void;
 
 type OnAdditionalEventSave = (soundName: string, action: string) => void;
+
+type AudioPlayConsentHandler = (isAudioPlaybackConsented: boolean) => void;
 
 interface ISoundModalStatus {
   isModalOpen: boolean;
@@ -87,7 +90,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     },
     clickedGridIndex: 0,
   });
-  const [isSoundAgreed, setIsSoundAgreed] = useState(false);
+  const [isAudioConsented, setIsAudioConsented] = useState(false);
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(true);
   const [audioContext, setAudioContext] = useState<AudioContext>();
 
   const audioAPITracks = useRef<{
@@ -101,6 +105,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   useEffect(() => {
     const audioCtx = new AudioContext();
+    audioCtx.resume();
     setAudioContext(audioCtx);
   }, []);
 
@@ -205,7 +210,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         }
       }
     },
-    [isSoundAgreed, soundGridData]
+    [audioContext, isAudioConsented, soundGridData]
   );
 
   const refCallback = (audioNode: HTMLAudioElement) => {
@@ -435,16 +440,22 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     }
   };
 
-  const soundPlayConsentHandler = () => {
-    if (!isSoundAgreed) {
-      setIsSoundAgreed(true);
+  const audioPlayConsentHandler: AudioPlayConsentHandler = (
+    isAudioPlaybackConsented
+  ) => {
+    if (isAudioPlaybackConsented) {
+      setIsAudioConsented(true);
       audioContext?.resume();
     }
+
+    setIsConsentModalOpen(false);
   };
 
   return (
     <SoundLayerSection height={height} width={width} show>
-      <button onClick={soundPlayConsentHandler}>사운드 들을랴?</button>
+      {isConsentModalOpen && (
+        <ConsentModal audioPlayConsentHandler={audioPlayConsentHandler} />
+      )}
       {soundGridData.map((data) => {
         const { index, gridPosition, showGrid, onGridClick, soundInfo } = data;
 
@@ -502,4 +513,5 @@ export type {
   ISoundRefs,
   OnAdditionalEventSave,
   SoundInfo,
+  AudioPlayConsentHandler,
 };
