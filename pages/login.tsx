@@ -11,11 +11,13 @@ import { JSInput } from "../components/reusable/JSInput/JSInput.component";
 import { magicClient } from "../lib/magicClient";
 import { JSButton } from "../components/reusable/JSButton/JSButton.component";
 import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
+import { userLoggedIn } from "../store/user/userSlice";
 
 const Login = () => {
   const [email, setEmail] = useState("");
-
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -39,6 +41,10 @@ const Login = () => {
       });
 
       if (res.status === 200) {
+        const { email: userEmail } = await magicClient.user.getMetadata();
+        dispatch(
+          userLoggedIn({ email: userEmail as string, isUserLoggedIn: true })
+        );
         router.push("/create");
       }
     } catch (err) {

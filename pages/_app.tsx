@@ -4,6 +4,8 @@ import { GlobalNavBar } from "../components/globalNavBar/globalNavBar.component"
 import { WithMagicAuth } from "../components/withMagicAuth";
 import { GetServerSideProps, GetStaticProps } from "next";
 import Head from "next/head";
+import { Provider } from "react-redux";
+import { store } from "../store/store";
 
 type CustomPageProps = {
   isPagePrivate?: boolean;
@@ -20,11 +22,13 @@ function MyApp({ Component, pageProps }: AppProps<CustomPageProps>) {
         <link rel="icon" type="image/png" href="/favicon.png" />
       </Head>
       <GlobalStyle />
-      <WithMagicAuth pageProps={pageProps}>
-        <GlobalNavBar>
-          <Component {...pageProps} />
-        </GlobalNavBar>
-      </WithMagicAuth>
+      <Provider store={store}>
+        <WithMagicAuth pageProps={pageProps}>
+          <GlobalNavBar>
+            <Component {...pageProps} />
+          </GlobalNavBar>
+        </WithMagicAuth>
+      </Provider>
     </>
   );
 }
