@@ -3,7 +3,7 @@ import { magicClient } from "../lib/magicClient";
 import { AppInitialProps } from "next/dist/shared/lib/utils";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
-import { userLoggedOut } from "../store/user/userSlice";
+import { userLoggedIn, userLoggedOut } from "../store/user/userSlice";
 import { RootState } from "../store/store";
 import { Loader } from "./loader/loader.component";
 
@@ -43,8 +43,12 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
         if (!magicClient) {
           return;
         }
-
         const isLoggedIn = await magicClient.user.isLoggedIn();
+
+        if (isLoggedIn && !isUserLoggedIn) {
+          const { email } = await magicClient.user.getMetadata();
+          dispatch(userLoggedIn({ email, isUserLoggedIn: true }));
+        }
 
         if (!isLoggedIn && isPagePrivate) {
           dispatch(userLoggedOut());
@@ -52,7 +56,7 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
         }
       })();
     },
-    [dispatch, isPagePrivate, router]
+    [isUserLoggedIn, dispatch, isPagePrivate, router]
   );
 
   if (isLoading) return <Loader />;

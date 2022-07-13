@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import {
+  AudioPlayConsentHandler,
   ISoundLayerProps,
   ISoundRefs,
 } from "../soundLayer/soundLayer.component";
@@ -8,13 +9,15 @@ import {
   StyledAudio,
 } from "../soundLayer/soundLayer.styles";
 import { AudioElementWrapper } from "../audioElementWrapper/audioElementWrapper.component";
+import { ConsentModal } from "../consentModal/consentModal.component";
 
 const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
   audioInfoDocument,
 }) => {
-  const [isSoundAgreed, setIsSoundAgreed] = useState(false);
+  const [isConsentModalOpen, setIsConsentModalOpen] = useState(true);
   const [audioContext, setAudioContext] = useState<AudioContext>();
+  const [isAudioConsented, setIsAudioConsented] = useState(false);
 
   const audioAPITracks = useRef<{
     [key: string]: {
@@ -75,7 +78,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
         }
       }
     },
-    [isSoundAgreed, audioInfoDocument, audioInfoDocument.audioInfo]
+    [isAudioConsented, audioInfoDocument, audioInfoDocument.audioInfo]
   );
 
   const refCallback = (audioNode: HTMLAudioElement) => {
@@ -108,16 +111,22 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
     }
   };
 
-  const soundPlayConsentHandler = () => {
-    if (!isSoundAgreed) {
-      setIsSoundAgreed(true);
+  const audioPlayConsentHandler: AudioPlayConsentHandler = (
+    isAudioPlaybackConsented
+  ) => {
+    if (isAudioPlaybackConsented) {
+      setIsAudioConsented(true);
       audioContext?.resume();
     }
+
+    setIsConsentModalOpen(false);
   };
 
   return (
     <SoundLayerSection height={height} width={width}>
-      <button onClick={soundPlayConsentHandler}>사운드 들을랴?</button>
+      {isConsentModalOpen && (
+        <ConsentModal audioPlayConsentHandler={audioPlayConsentHandler} />
+      )}
       {audioInfoDocument.audioInfo.map((data) => {
         const { index, gridPosition, title, action, volume, src } = data;
 
