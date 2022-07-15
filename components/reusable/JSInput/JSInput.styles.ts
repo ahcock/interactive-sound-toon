@@ -34,11 +34,6 @@ export const JSInputInputWrapper = styled.div`
     box-shadow: inset 0 0 0 2px var(--blue200);
   }
 
-  &:active {
-    outline: 0;
-    box-shadow: ${focusBoxShadow};
-  }
-
   &:focus-within {
     outline: 0;
     box-shadow: ${focusBoxShadow};

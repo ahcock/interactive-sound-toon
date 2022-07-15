@@ -62,7 +62,6 @@ interface SoundInfo {
   title: string;
   fileName?: string;
   volume?: number;
-  onSoundContainerClick: () => void;
   action?: string;
   isSoundAlreadyUploaded?: boolean;
 }
@@ -149,8 +148,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 volume,
                 fileName,
                 src,
-                onSoundContainerClick: () =>
-                  onSavedSoundClick(gridPosition, index, { name: title, file }),
+                file,
                 isSoundAlreadyUploaded: true,
                 ...(action && { action }),
               },
@@ -176,6 +174,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               const volume = entry.target.getAttribute("data-volume") || "1";
 
               if (
+                audioContext &&
                 entry.isIntersecting &&
                 !!action &&
                 !!soundName &&
@@ -189,13 +188,20 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               }
 
               if (
+                audioContext &&
                 entry.isIntersecting &&
                 !!soundName &&
                 action !== "stop" &&
                 soundRefs.current[soundName].paused
               ) {
-                audioAPITracks.current[soundName].gainNode.gain.value =
-                  parseFloat(!!volume ? `${volume}` : "1");
+                audioAPITracks.current[soundName].gainNode.gain.setValueAtTime(
+                  parseFloat(volume || "1.0"),
+                  audioContext.currentTime
+                );
+
+                // audioAPITracks.current[soundName].gainNode.gain.value =
+                //   parseFloat(!!volume ? `${volume}` : "1");
+
                 soundRefs.current[soundName].play();
               }
             });
@@ -223,7 +229,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       if (!!soundName && !audioAPITracks.current[soundName] && !!audioContext) {
         soundRefs.current[soundName] = audioNode;
 
-        // make new audio context for Web Audio API
+        // make new mediaSource(track)
         const track = audioContext.createMediaElementSource(
           soundRefs.current[soundName]
         );
@@ -279,12 +285,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           file,
           fileName: file.name,
           src: audioUrl,
-          onSoundContainerClick: () =>
-            onSavedSoundClick(
-              soundModalStatus.modalOpenedGridPosition,
-              soundModalStatus.clickedGridIndex,
-              { name: title, file }
-            ),
         },
       };
 
@@ -304,8 +304,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       setSoundGridData(newSoundGridData);
     }
   };
-
-  //TODO: 버그 발견 사운드 그리드 콤포넌트 클릭시 모달에서 한가지 사운드로만 인식 됨
 
   const onSoundDelete: OnSoundDelete = (gridPosition: GridInfo) => {
     if (!!soundGridData) {
@@ -335,12 +333,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         action,
         title: soundName,
         volume: 1,
-        onSoundContainerClick: () =>
-          onSavedSoundClick(
-            soundModalStatus.modalOpenedGridPosition,
-            soundModalStatus.clickedGridIndex,
-            { name: soundName }
-          ),
       },
     };
 
@@ -468,7 +460,14 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             onGridClick={onGridClick}
           >
             {!!soundInfo && (
-              <SoundContainer onClick={soundInfo.onSoundContainerClick}>
+              <SoundContainer
+                onClick={() => {
+                  onSavedSoundClick(gridPosition, index, {
+                    name: soundInfo?.title,
+                    file: soundInfo.file,
+                  });
+                }}
+              >
                 {soundInfo.title}
                 <StyledAudio
                   ref={refCallback}

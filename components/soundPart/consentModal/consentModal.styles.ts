@@ -9,6 +9,7 @@ export const ModalBackground = styled.div`
   background-color: rgb(0, 0, 0, 0.5);
   overflow: hidden;
   display: flex;
+  z-index: 2;
 `;
 
 export const ModalContainer = styled.div`
