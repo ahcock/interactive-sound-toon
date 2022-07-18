@@ -31,7 +31,6 @@ export default class MyDocument extends Document {
 
   render() {
     return (
-      // eslint-disable-next-line react/jsx-no-undef
       <Html>
         <Head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
