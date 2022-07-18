@@ -1,9 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
-import {
-  SoundContainer,
-  SoundLayerSection,
-  StyledAudio,
-} from "./soundLayer.styles";
+import { SoundContainer, SoundLayerSection } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
 import { IAudioInfoDocument } from "../../../pages/create/[name]/[episode]";
@@ -45,7 +41,7 @@ interface ISoundModalStatus {
 }
 
 interface ISoundRefs {
-  [key: string]: HTMLAudioElement;
+  [key: string]: HTMLDivElement;
 }
 
 interface ISoundLayerProps {
@@ -93,9 +89,13 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(true);
   const [audioContext, setAudioContext] = useState<AudioContext>();
 
+  // Audio buffer 보관소
+  const audioBuffers = useRef<{ [key: string]: AudioBuffer }>({});
+  const playingAudioTracks = useRef<{ [key: string]: boolean }>({});
+
   const audioAPITracks = useRef<{
     [key: string]: {
-      track: MediaElementAudioSourceNode;
+      audioBuffer: AudioBuffer;
       gainNode: GainNode;
     };
   }>({});
@@ -106,6 +106,10 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     const audioCtx = new AudioContext();
     audioCtx.resume();
     setAudioContext(audioCtx);
+
+    return () => {
+      audioContext?.close();
+    };
   }, []);
 
   useEffect(
@@ -123,9 +127,9 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         }
       }
 
-      if (!!audioInfoDocument) {
+      if (!!audioInfoDocument && !!audioContext) {
         (async () => {
-          for (const {
+          for await (const {
             index,
             gridPosition,
             title,
@@ -137,6 +141,18 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             const file = await fetch(src)
               .then((res) => res.blob())
               .then((blob) => new File([blob], fileName ?? ""));
+
+            const audioBuffer = await fetch(src)
+              .then((res) => res.arrayBuffer())
+              .then((buffer) => audioContext?.decodeAudioData(buffer));
+
+            audioBuffers.current[title] = audioBuffer;
+            const gainNode = new GainNode(audioContext);
+
+            audioAPITracks.current[title] = {
+              audioBuffer: audioBuffer,
+              gainNode,
+            };
 
             soundGridInfo[index] = {
               gridPosition,
@@ -156,10 +172,9 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           }
         })();
       }
-
       setSoundGridData(soundGridInfo);
     },
-    [audioInfoDocument]
+    [audioInfoDocument, audioContext]
   );
 
   useEffect(
@@ -176,33 +191,31 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               if (
                 audioContext &&
                 entry.isIntersecting &&
-                !!action &&
                 !!soundName &&
-                action === "stop" &&
-                soundRefs.current[soundName].currentTime > 0
+                action !== "stop"
               ) {
-                soundRefs.current[soundName.split("-")[0]].volume = 0;
-                soundRefs.current[soundName.split("-")[0]].pause();
-                soundRefs.current[soundName.split("-")[0]].currentTime = 0;
-                return;
-              }
+                const { audioBuffer, gainNode } =
+                  audioAPITracks.current[soundName];
 
-              if (
-                audioContext &&
-                entry.isIntersecting &&
-                !!soundName &&
-                action !== "stop" &&
-                soundRefs.current[soundName].paused
-              ) {
-                audioAPITracks.current[soundName].gainNode.gain.setValueAtTime(
-                  parseFloat(volume || "1.0"),
-                  audioContext.currentTime
-                );
+                const bufferSource = new AudioBufferSourceNode(audioContext, {
+                  buffer: audioBuffer,
+                });
 
-                // audioAPITracks.current[soundName].gainNode.gain.value =
-                //   parseFloat(!!volume ? `${volume}` : "1");
+                if (
+                  !(soundName in playingAudioTracks.current) ||
+                  !playingAudioTracks.current[soundName]
+                ) {
+                  bufferSource
+                    .connect(gainNode)
+                    .connect(audioContext.destination);
 
-                soundRefs.current[soundName].play();
+                  bufferSource.start();
+                  playingAudioTracks.current[soundName] = true;
+                }
+
+                bufferSource.onended = (ev) => {
+                  playingAudioTracks.current[soundName] = false;
+                };
               }
             });
           },
@@ -219,32 +232,16 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     [audioContext, isAudioConsented, soundGridData]
   );
 
-  const refCallback = (audioNode: HTMLAudioElement) => {
+  const refCallback = (audioNode: HTMLDivElement) => {
     if (!!audioNode) {
-      const additionalAction = audioNode.getAttribute("data-action");
-      const soundName = additionalAction
-        ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
-        : audioNode.getAttribute("data-name");
+      // const additionalAction = audioNode.getAttribute("data-action");
+      // const soundName = additionalAction
+      //   ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
+      //   : audioNode.getAttribute("data-name");
 
-      if (!!soundName && !audioAPITracks.current[soundName] && !!audioContext) {
+      const soundName = audioNode.getAttribute("data-name");
+      if (!!soundName && !!audioContext) {
         soundRefs.current[soundName] = audioNode;
-
-        // make new mediaSource(track)
-        const track = audioContext.createMediaElementSource(
-          soundRefs.current[soundName]
-        );
-
-        const gainNode = audioContext.createGain();
-
-        track.connect(gainNode).connect(audioContext.destination);
-
-        audioAPITracks.current = {
-          ...audioAPITracks.current,
-          [soundName]: {
-            track,
-            gainNode,
-          },
-        };
       }
     }
   };
@@ -270,9 +267,18 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     });
   };
 
-  const onSoundSave: OnSoundSave = (title, file, volume) => {
-    if (!!file) {
+  const onSoundSave: OnSoundSave = async (title, file, volume) => {
+    if (!!file && !!audioContext) {
+      // TODO: 이 createObjectURL로 만들어진 audioUrl은 필요없지 않을까?
       const audioUrl = URL.createObjectURL(file);
+      const arrayBuffer = await file.arrayBuffer();
+      const audioBuffer = await audioContext?.decodeAudioData(arrayBuffer);
+      const gainNode = new GainNode(audioContext);
+
+      audioAPITracks.current[title] = {
+        audioBuffer: audioBuffer,
+        gainNode,
+      };
 
       const gridDataWithSound: ISoundGridDataForCreator = {
         index: soundModalStatus.clickedGridIndex,
@@ -296,11 +302,13 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       return;
     }
 
-    const clickedGridData = soundGridData[soundModalStatus.clickedGridIndex];
+    const { clickedGridIndex } = soundModalStatus;
+
+    const clickedGridData = soundGridData[clickedGridIndex];
     if (!!soundGridData && clickedGridData.soundInfo) {
       clickedGridData.soundInfo.title = title;
       const newSoundGridData = [...soundGridData];
-      newSoundGridData[soundModalStatus.clickedGridIndex] = clickedGridData;
+      newSoundGridData[clickedGridIndex] = clickedGridData;
       setSoundGridData(newSoundGridData);
     }
   };
@@ -314,7 +322,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         showGrid: true,
         onGridClick: onGridClick,
       };
-
       setSoundGridData(newSoundGridData);
     }
   };
@@ -467,18 +474,12 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                     file: soundInfo.file,
                   });
                 }}
+                ref={refCallback}
+                data-name={soundInfo.title}
+                data-action={soundInfo.action}
+                data-volume={soundInfo.volume}
               >
                 {soundInfo.title}
-                <StyledAudio
-                  ref={refCallback}
-                  data-name={soundInfo.title}
-                  data-action={soundInfo.action}
-                  data-volume={soundInfo.volume}
-                  controls
-                  crossOrigin="anonymous"
-                >
-                  <source src={soundInfo.src} />
-                </StyledAudio>
               </SoundContainer>
             )}
           </GridForSoundCreator>
