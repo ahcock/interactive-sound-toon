@@ -71,8 +71,3 @@ export const RadioLabel = styled.label`
   align-items: center;
   gap: 8px;
 `;
-
-export const AdditionalEventButton = styled.button`
-  width: 200px;
-  height: 100px;
-`;

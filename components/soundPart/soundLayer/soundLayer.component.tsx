@@ -1,9 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
-import {
-  SoundContainer,
-  SoundLayerSection,
-  StyledAudio,
-} from "./soundLayer.styles";
+import { SoundContainer, SoundLayerSection } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
 import { IAudioInfoDocument } from "../../../pages/create/[name]/[episode]";
@@ -45,7 +41,7 @@ interface ISoundModalStatus {
 }
 
 interface ISoundRefs {
-  [key: string]: HTMLAudioElement;
+  [key: string]: HTMLDivElement;
 }
 
 interface ISoundLayerProps {
@@ -236,7 +232,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     [audioContext, isAudioConsented, soundGridData]
   );
 
-  const refCallback = (audioNode: HTMLAudioElement) => {
+  const refCallback = (audioNode: HTMLDivElement) => {
     if (!!audioNode) {
       // const additionalAction = audioNode.getAttribute("data-action");
       // const soundName = additionalAction
@@ -478,18 +474,12 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                     file: soundInfo.file,
                   });
                 }}
+                ref={refCallback}
+                data-name={soundInfo.title}
+                data-action={soundInfo.action}
+                data-volume={soundInfo.volume}
               >
                 {soundInfo.title}
-                <StyledAudio
-                  ref={refCallback}
-                  data-name={soundInfo.title}
-                  data-action={soundInfo.action}
-                  data-volume={soundInfo.volume}
-                  controls
-                  crossOrigin="anonymous"
-                >
-                  <source src={soundInfo.src} />
-                </StyledAudio>
               </SoundContainer>
             )}
           </GridForSoundCreator>
