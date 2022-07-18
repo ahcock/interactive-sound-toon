@@ -7,6 +7,7 @@ import {
 import { SoundLayerSection } from "../soundLayer/soundLayer.styles";
 import { ConsentModal } from "../consentModal/consentModal.component";
 import { SoundGridItem } from "./soundLayerForUsers.styles";
+import { useRouter } from "next/router";
 
 const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
@@ -15,8 +16,8 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(true);
   const [audioContext, setAudioContext] = useState<AudioContext>();
   const [isAudioConsented, setIsAudioConsented] = useState(false);
-  const audioBuffers = useRef<{ [key: string]: AudioBuffer }>({});
   const playingAudioTracks = useRef<{ [key: string]: boolean }>({});
+  const router = useRouter();
 
   const audioAPITracks = useRef<{
     [key: string]: {
@@ -26,6 +27,33 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   }>({});
 
   const soundRefs = useRef<ISoundRefs>({});
+
+  useEffect(function initializeAudioContext() {
+    const audioCtx = new AudioContext();
+    audioCtx.resume();
+    setAudioContext(audioCtx);
+
+    return () => {
+      audioContext?.close();
+    };
+  }, []);
+
+  useEffect(
+    function stopAllSoundFromAudioContext() {
+      const stopAllSound = () => {
+        Object.values(audioAPITracks.current).forEach(({ gainNode }) =>
+          gainNode.disconnect()
+        );
+      };
+
+      router.events.on("routeChangeStart", stopAllSound);
+
+      return () => {
+        router.events.off("routeChangeStart", stopAllSound);
+      };
+    },
+    [router.asPath]
+  );
 
   useEffect(
     function registerSoundGrid() {
@@ -38,16 +66,10 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
             fileName,
             action,
           } of audioInfoDocument.audioInfo) {
-            // TODO: 곧 이 파일을 지워야 할듯
-            const file = await fetch(src)
-              .then((res) => res.blob())
-              .then((blob) => new File([blob], fileName ?? ""));
-
             const audioBuffer = await fetch(src)
               .then((res) => res.arrayBuffer())
               .then((buffer) => audioContext?.decodeAudioData(buffer));
 
-            audioBuffers.current[title] = audioBuffer;
             const gainNode = new GainNode(audioContext);
 
             audioAPITracks.current[title] = {
@@ -58,18 +80,8 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
         })();
       }
     },
-    [audioContext, audioInfoDocument]
+    [audioInfoDocument, audioContext]
   );
-
-  useEffect(() => {
-    const audioCtx = new AudioContext();
-    audioCtx.resume();
-    setAudioContext(audioCtx);
-
-    return () => {
-      audioContext?.close();
-    };
-  }, []);
 
   useEffect(
     function setIntersectionObserver() {
@@ -82,6 +94,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
               const volume = entry.target.getAttribute("data-volume") || "1";
 
               if (
+                isAudioConsented &&
                 audioContext &&
                 entry.isIntersecting &&
                 !!soundName &&
