@@ -45,6 +45,17 @@ interface ISoundRefs {
   [key: string]: HTMLDivElement;
 }
 
+interface PlayingAudioTracks {
+  [key: string]: AudioBufferSourceNode | undefined;
+}
+
+interface AudioAPITracks {
+  [key: string]: {
+    audioBuffer: AudioBuffer;
+    gainNode: GainNode;
+  };
+}
+
 interface ISoundLayerProps {
   imageLayerDimension: {
     height: number;
@@ -92,14 +103,9 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   const router = useRouter();
 
   // Audio buffer 보관소
-  const audioAPITracks = useRef<{
-    [key: string]: {
-      audioBuffer: AudioBuffer;
-      gainNode: GainNode;
-    };
-  }>({});
+  const audioAPITracks = useRef<AudioAPITracks>({});
 
-  const playingAudioTracks = useRef<{ [key: string]: boolean }>({});
+  const playingAudioTracks = useRef<PlayingAudioTracks>({});
 
   const soundRefs = useRef<ISoundRefs>({});
 
@@ -196,22 +202,42 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   useEffect(
     function setIntersectionObserver() {
-      if (!!soundRefs && !!soundRefs.current) {
+      if (
+        !!soundRefs &&
+        !!soundRefs.current &&
+        isAudioConsented &&
+        audioContext
+      ) {
         const observer = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
               //TODO: https://bobbyhadz.com/blog/javascript-get-all-attributes-of-element 적용
-              const soundName = entry.target.getAttribute("data-name");
+              const soundName = entry.target.getAttribute("data-name") || "";
               const action = entry.target.getAttribute("data-action");
-              const volume = entry.target.getAttribute("data-volume") || "1";
+              const volume = parseInt(
+                entry.target.getAttribute("data-volume") || "1"
+              );
+
+              const amp = audioAPITracks.current[soundName].gainNode.gain;
 
               if (
-                isAudioConsented &&
-                audioContext &&
                 entry.isIntersecting &&
                 !!soundName &&
-                action !== "stop"
+                action === "stop" &&
+                amp.value >= volume // 한번 fade-out이 시작되어 원래 셋팅된 볼륨보다 작아지기 시작했을 때부터는, 또 다시 fade-out을 방지하기 위한 조건(안 그럼 볼륨이 내려가다가 스크롤이 지날 때 마다 다시 올라갔다 내려갔다 반복함)
               ) {
+                amp.setValueAtTime(volume, audioContext.currentTime);
+                amp.linearRampToValueAtTime(0, audioContext.currentTime + 2);
+
+                playingAudioTracks.current[soundName]?.stop(
+                  audioContext.currentTime + 2.1
+                );
+
+                // recover volume after fade-out for the next play
+                amp.setValueAtTime(volume, audioContext.currentTime + 2.1);
+              }
+
+              if (entry.isIntersecting && !!soundName && action !== "stop") {
                 const { audioBuffer, gainNode } =
                   audioAPITracks.current[soundName];
 
@@ -228,11 +254,11 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                     .connect(audioContext.destination);
 
                   bufferSource.start();
-                  playingAudioTracks.current[soundName] = true;
+                  playingAudioTracks.current[soundName] = bufferSource;
                 }
 
                 bufferSource.onended = (ev) => {
-                  playingAudioTracks.current[soundName] = false;
+                  playingAudioTracks.current[soundName] = undefined;
                 };
               }
             });
@@ -252,11 +278,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   const refCallback = (audioNode: HTMLDivElement) => {
     if (!!audioNode) {
-      // const additionalAction = audioNode.getAttribute("data-action");
-      // const soundName = additionalAction
-      //   ? `${additionalAction}-${audioNode.getAttribute("data-name")}`
-      //   : audioNode.getAttribute("data-name");
-
       const soundName = audioNode.getAttribute("data-name");
       if (!!soundName && !!audioContext) {
         soundRefs.current[soundName] = audioNode;
@@ -532,4 +553,6 @@ export type {
   OnAdditionalEventSave,
   SoundInfo,
   AudioPlayConsentHandler,
+  PlayingAudioTracks,
+  AudioAPITracks,
 };
