@@ -10,6 +10,7 @@ import { SoundLayerSection } from "../soundLayer/soundLayer.styles";
 import { ConsentModal } from "../consentModal/consentModal.component";
 import { SoundGridItem } from "./soundLayerForUsers.styles";
 import { useRouter } from "next/router";
+import { isNull } from "lodash";
 
 const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   imageLayerDimension: { height, width },
@@ -63,16 +64,18 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
             fileName,
             action,
           } of audioInfoDocument.audioInfo) {
-            const audioBuffer = await fetch(src)
-              .then((res) => res.arrayBuffer())
-              .then((buffer) => audioContext?.decodeAudioData(buffer));
+            if (!!src && !action) {
+              const audioBuffer = await fetch(src)
+                .then((res) => res.arrayBuffer())
+                .then((buffer) => audioContext?.decodeAudioData(buffer));
 
-            const gainNode = new GainNode(audioContext);
+              const gainNode = new GainNode(audioContext);
 
-            audioAPITracks.current[title] = {
-              audioBuffer: audioBuffer,
-              gainNode,
-            };
+              audioAPITracks.current[title] = {
+                audioBuffer: audioBuffer,
+                gainNode,
+              };
+            }
           }
         })();
       }
@@ -101,6 +104,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
               const amp = audioAPITracks.current[soundName].gainNode.gain;
 
               if (
+                !isNull(action) &&
                 entry.isIntersecting &&
                 !!soundName &&
                 action === "stop" &&
@@ -125,10 +129,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
                   buffer: audioBuffer,
                 });
 
-                if (
-                  !(soundName in playingAudioTracks.current) ||
-                  !playingAudioTracks.current[soundName]
-                ) {
+                if (!playingAudioTracks.current[soundName]) {
                   bufferSource
                     .connect(gainNode)
                     .connect(audioContext.destination);
@@ -163,7 +164,10 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
 
   const refCallback = (audioNode: HTMLDivElement) => {
     if (!!audioNode) {
-      const soundName = audioNode.getAttribute("data-name");
+      const name = audioNode.getAttribute("data-name");
+      const action = audioNode.getAttribute("data-action");
+      const soundName = isNull(action) ? name : `${name}-${action}`;
+
       if (!!soundName && !!audioContext) {
         soundRefs.current[soundName] = audioNode;
       }
