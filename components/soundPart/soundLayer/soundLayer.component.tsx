@@ -2,9 +2,13 @@ import { FC, useEffect, useRef, useState } from "react";
 import { SoundContainer, SoundLayerSection } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
-import { IAudioInfoDocument } from "../../../pages/create/[name]/[episode]";
+import {
+  AudioInfo,
+  IAudioInfoDocument,
+} from "../../../pages/create/[name]/[episode]";
 import { ConsentModal } from "../consentModal/consentModal.component";
 import { useRouter } from "next/router";
+import { isNull } from "lodash";
 
 type GridInfo = {
   column: string;
@@ -162,36 +166,51 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             fileName,
             action,
           } of audioInfoDocument.audioInfo) {
-            const file = await fetch(src)
-              .then((res) => res.blob())
-              .then((blob) => new File([blob], fileName ?? ""));
+            if (src && !action) {
+              const file = await fetch(src)
+                .then((res) => res.blob())
+                .then((blob) => new File([blob], fileName ?? ""));
 
-            const audioBuffer = await fetch(src)
-              .then((res) => res.arrayBuffer())
-              .then((buffer) => audioContext?.decodeAudioData(buffer));
+              const audioBuffer = await fetch(src)
+                .then((res) => res.arrayBuffer())
+                .then((buffer) => audioContext?.decodeAudioData(buffer));
 
-            const gainNode = new GainNode(audioContext);
+              const gainNode = new GainNode(audioContext);
 
-            audioAPITracks.current[title] = {
-              audioBuffer: audioBuffer,
-              gainNode,
-            };
+              audioAPITracks.current[title] = {
+                audioBuffer: audioBuffer,
+                gainNode,
+              };
 
-            soundGridInfo[index] = {
-              gridPosition,
-              index,
-              showGrid: true,
-              onGridClick: onGridClick,
-              soundInfo: {
-                title,
-                volume,
-                fileName,
-                src,
-                file,
-                isSoundAlreadyUploaded: true,
-                ...(action && { action }),
-              },
-            };
+              soundGridInfo[index] = {
+                gridPosition,
+                index,
+                showGrid: true,
+                onGridClick: onGridClick,
+                soundInfo: {
+                  title,
+                  volume,
+                  fileName,
+                  src,
+                  file,
+                  isSoundAlreadyUploaded: true,
+                },
+              };
+            } else if (!!action) {
+              soundGridInfo[index] = {
+                gridPosition,
+                index,
+                showGrid: true,
+                onGridClick: onGridClick,
+                soundInfo: {
+                  title,
+                  volume,
+                  fileName,
+                  isSoundAlreadyUploaded: true,
+                  action,
+                },
+              };
+            }
           }
         })();
       }
@@ -221,6 +240,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               const amp = audioAPITracks.current[soundName].gainNode.gain;
 
               if (
+                !isNull(action) &&
                 entry.isIntersecting &&
                 !!soundName &&
                 action === "stop" &&
@@ -237,7 +257,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 amp.setValueAtTime(volume, audioContext.currentTime + 2.1);
               }
 
-              if (entry.isIntersecting && !!soundName && action !== "stop") {
+              if (entry.isIntersecting && !!soundName) {
                 const { audioBuffer, gainNode } =
                   audioAPITracks.current[soundName];
 
@@ -245,10 +265,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                   buffer: audioBuffer,
                 });
 
-                if (
-                  !(soundName in playingAudioTracks.current) ||
-                  !playingAudioTracks.current[soundName]
-                ) {
+                if (!playingAudioTracks.current[soundName]) {
                   bufferSource
                     .connect(gainNode)
                     .connect(audioContext.destination);
@@ -278,7 +295,10 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   const refCallback = (audioNode: HTMLDivElement) => {
     if (!!audioNode) {
-      const soundName = audioNode.getAttribute("data-name");
+      const name = audioNode.getAttribute("data-name");
+      const action = audioNode.getAttribute("data-action");
+      const soundName = isNull(action) ? name : `${name}-${action}`;
+
       if (!!soundName && !!audioContext) {
         soundRefs.current[soundName] = audioNode;
       }
@@ -423,16 +443,30 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         )
     );
 
-    const newlyUploadedSound: IAudioInfoDocument["audioInfo"] = [];
+    const newlyUploadedSound: AudioInfo[] = [];
 
     if (!!savedSound) {
       for (const data of unUploadedSound) {
-        if (!!data.soundInfo && !!data.soundInfo.src) {
+        if (
+          (!!data.soundInfo && !!data.soundInfo.src) ||
+          (data.soundInfo && data.soundInfo.action)
+        ) {
           const {
             index,
             gridPosition,
             soundInfo: { file: audioFile, title, volume, action, fileName },
           } = data;
+
+          if (!!action) {
+            newlyUploadedSound.push({
+              index,
+              gridPosition,
+              title,
+              volume,
+              fileName,
+              action,
+            });
+          }
 
           if (!!audioFile) {
             const { url } = await fetch(

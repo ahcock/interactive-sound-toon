@@ -16,19 +16,23 @@ interface ITotalImageDimensionType {
   height: number;
 }
 
+interface AudioInfo {
+  src?: string;
+  index: number;
+  gridPosition: GridInfo;
+  title: string;
+  fileName?: string;
+  volume?: number;
+  action?: string;
+}
+
 interface IAudioInfoDocument {
   webtoonName: string;
   episode: string;
-  audioInfo: {
-    src: string;
-    index: number;
-    gridPosition: GridInfo;
-    title: string;
-    fileName?: string;
-    volume?: number;
-    action?: string;
-  }[];
+  audioInfo: AudioInfo[];
 }
+
+type IAdditaionalEventActionInfo = Omit<AudioInfo, "src" | "fileName">;
 
 interface IImageInfoDocument {
   webtoonName: string;
@@ -141,7 +145,9 @@ export default SoundWebtoon;
 export { getStaticPaths, getStaticProps };
 export type {
   ITotalImageDimensionType,
+  AudioInfo,
   IAudioInfoDocument,
   IImageInfoDocument,
   ISoundWebtoonProps,
+  IAdditaionalEventActionInfo,
 };
