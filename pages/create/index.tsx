@@ -2,7 +2,7 @@ import { FC } from "react";
 import { WebtoonCard } from "../../components/webtoonCard/webtoonCard.component";
 import { SoundWebtoonsContainer } from "../../styles/pageComponentStyles/soundWebtoonsPage.styles";
 import { mongoFindAllImageInfo } from "../../lib/mongo/mongoFindAllImageInfo";
-import { GetServerSideProps, GetStaticProps } from "next";
+import { GetStaticProps } from "next";
 
 interface IWebtoonCardInfo {
   _id: string;
@@ -38,17 +38,6 @@ const getStaticProps: GetStaticProps = async () => {
     },
   };
 };
-
-const getServerSideProps: GetServerSideProps = async () => {
-  const allImageInfoForWebtoonCard = await mongoFindAllImageInfo();
-  return {
-    props: {
-      allImageInfoForWebtoonCard,
-      isPagePrivate: true,
-    },
-  };
-};
-
 export default Create;
-export { getServerSideProps };
+export { getStaticProps };
 export type { IWebtoonCardInfo };
