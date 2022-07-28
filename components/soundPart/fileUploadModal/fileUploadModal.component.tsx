@@ -8,8 +8,10 @@ import {
   useState,
 } from "react";
 import {
+  AdditionalEventRadioGroup,
   AdditionalEventSelect,
   ButtonContainer,
+  ChangeVolumeValue,
   DeleteButtonContainer,
   FileUploaderLabel,
   ModalBackground,
@@ -17,30 +19,34 @@ import {
   ModalButton,
   ModalInputForm,
   ModalTitle,
+  RadioInput,
+  RadioLabel,
   SoundNameInput,
   SoundReviewer,
+  StyledInputRange,
   Subtitle,
 } from "./fileUploadModal.styles";
 import UploadIcon from "/images/svg/upload.svg";
 import {
+  AdditionalAction,
+  AudioAPITracks,
   ISoundModalStatus,
   OnAdditionalEventSave,
-  OnSoundDelete,
+  OnAudioDelete,
   OnSoundSave,
-} from "../soundPart/soundLayer/soundLayer.component";
-import {
-  AdditionalEventRadioGroup,
-  RadioInput,
-  RadioLabel,
-} from "../soundPart/soundLayer/soundLayer.styles";
+  SoundInfoType,
+} from "../soundLayer/soundLayer.component";
+import { isBoolean, isUndefined } from "lodash";
 
 interface ISoundSaveModalProps {
   setModalStatus: Dispatch<SetStateAction<ISoundModalStatus>>;
   modalStatus: ISoundModalStatus;
   onSoundSave: OnSoundSave;
-  onAudioDelete: OnSoundDelete;
+  onAudioDelete: OnAudioDelete;
   soundRefList: string[];
   onAdditionalEventSave: OnAdditionalEventSave;
+  audioAPITracks: AudioAPITracks;
+  audioContext: AudioContext | undefined;
 }
 
 const SoundSaveModal: FC<ISoundSaveModalProps> = ({
@@ -50,24 +56,64 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
   onAudioDelete,
   soundRefList,
   onAdditionalEventSave,
+  audioAPITracks,
+  audioContext,
 }) => {
   const [inputValue, setInputValue] = useState<{
-    soundTitle: string;
+    soundName: string;
     soundFile?: File | null;
   }>({
-    soundTitle: "",
+    soundName: "",
     soundFile: null,
   });
 
   const [isForAdditionalEvent, setIsForAdditionalEvent] = useState(false);
+  const [additionalActionValue, setAdditionalActionValue] = useState<
+    AdditionalAction | undefined
+  >();
   const [soundSrc, setSoundSrc] = useState("");
-  //TODO: 어쩌면 setVolume은 리렌더가 필요하지 않으니 useRef로의 사용을 고려해 봐야 할 수도
   const [volume, setVolume] = useState(1);
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
+  const [volumeChangeInfo, setVolumeChangeInfo] = useState({
+    isVolumeChangeChecked: false,
+    volume: "0",
+    selectedExistingSound: "",
+  });
+
+  const changeVolumeChangeInfo = (
+    name: keyof typeof volumeChangeInfo,
+    value: boolean | string
+  ) => {
+    if (name === "isVolumeChangeChecked" && isBoolean(value)) {
+      setVolumeChangeInfo({
+        ...volumeChangeInfo,
+        isVolumeChangeChecked: value,
+      });
+      return;
+    }
+
+    setVolumeChangeInfo({ ...volumeChangeInfo, [name]: value });
+  };
+
+  useEffect(function setInitialVolume() {
+    const initialVolume = modalStatus.soundInfo?.volume;
+
+    if (initialVolume) setVolume(initialVolume);
+  }, []);
+
+  useEffect(
+    function changeVolumeOnExistingSoundSelect() {
+      const selectedSound = volumeChangeInfo.selectedExistingSound;
+      if (!!selectedSound) {
+        setVolume(audioAPITracks[selectedSound].gainNode.gain.value);
+      }
+    },
+    [volumeChangeInfo.selectedExistingSound]
+  );
 
   useEffect(
     function setUploadButtonStatus() {
-      !!inputValue.soundFile && !!inputValue.soundTitle
+      !!inputValue.soundFile && !!inputValue.soundName
         ? setIsSaveDisabled(false)
         : setIsSaveDisabled(true);
     },
@@ -75,14 +121,19 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
   );
 
   useEffect(function setInitialValue() {
-    const { savedSound } = modalStatus;
+    const { soundInfo } = modalStatus;
 
-    if (savedSound) {
-      const { name, file } = savedSound;
+    if (soundInfo) {
+      const { title, file, type, action } = soundInfo;
       setInputValue({
-        soundTitle: name,
+        soundName: title || "",
         soundFile: file,
       });
+
+      if (type === SoundInfoType.ACTION) {
+        setIsForAdditionalEvent(true);
+        setAdditionalActionValue(action);
+      }
 
       if (!!file) {
         const soundSrcUrl = URL.createObjectURL(file);
@@ -109,6 +160,30 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
     };
   }, [inputValue.soundFile]);
 
+  useEffect(
+    function changeAudioNodeGainValue() {
+      const soundInfo = modalStatus.savedSound;
+
+      if (
+        isUndefined(soundInfo) &&
+        !!volumeChangeInfo.selectedExistingSound &&
+        audioContext
+      ) {
+        audioAPITracks[
+          volumeChangeInfo.selectedExistingSound
+        ].gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+      }
+
+      if (soundInfo && !isUndefined(audioContext)) {
+        audioAPITracks[soundInfo.name].gainNode.gain.setValueAtTime(
+          volume,
+          audioContext.currentTime
+        );
+      }
+    },
+    [volume]
+  );
+
   const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = event.target;
     setInputValue({ ...inputValue, [name]: !!files ? files[0] : value });
@@ -116,18 +191,26 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
 
   const onSaveHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { soundTitle, soundFile } = e.currentTarget;
+    const { soundName, soundFile } = e.currentTarget;
 
     if (!soundFile.files[0]) {
-      if (modalStatus.savedSound?.name !== inputValue.soundTitle) {
-        onSoundSave(soundTitle.value);
+      if (
+        modalStatus.soundInfo?.title !== inputValue.soundName ||
+        modalStatus.soundInfo.volume !== volume
+      ) {
+        onSoundSave(soundName.value, volume);
       }
       setModalStatus({ ...modalStatus, isModalOpen: false });
       return;
     }
 
-    onSoundSave(soundTitle.value, soundFile.files[0], volume);
+    onSoundSave(inputValue.soundName, volume, soundFile.files[0]);
     setModalStatus({ ...modalStatus, isModalOpen: false });
+  };
+
+  const onVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    setVolume(parseFloat(e.currentTarget.value));
   };
 
   return (
@@ -146,12 +229,12 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
               <SoundNameInput
                 autoFocus
                 placeholder="Sound Name"
-                name="soundTitle"
+                name="soundName"
                 onKeyDown={(e) =>
                   e.key === "Escape" &&
                   setModalStatus({ ...modalStatus, isModalOpen: false })
                 }
-                value={inputValue.soundTitle}
+                value={inputValue.soundName}
                 onChange={onChangeHandler}
               />
               <Subtitle>Sound File</Subtitle>
@@ -168,7 +251,7 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
                 <UploadIcon width={24} height={24} fill="grey" />
               </FileUploaderLabel>
 
-              {soundSrc && (
+              {soundSrc && !modalStatus.savedSound ? (
                 <div>
                   <Subtitle>Sound review & Set Volume </Subtitle>
                   <SoundReviewer
@@ -177,6 +260,19 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
                     onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
                   />
                 </div>
+              ) : (
+                <>
+                  <Subtitle>Volume Change</Subtitle>
+                  <StyledInputRange
+                    type="range"
+                    min="0"
+                    max="1"
+                    value={volume}
+                    step="0.001"
+                    onChange={onVolumeChange}
+                  />
+                  <ChangeVolumeValue>{volume}</ChangeVolumeValue>
+                </>
               )}
 
               <ButtonContainer>
@@ -184,7 +280,12 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
                   <ModalButton
                     type="button"
                     onClick={() => {
-                      onAudioDelete(modalStatus.modalOpenedGridPosition);
+                      onAudioDelete(
+                        modalStatus.modalOpenedGridPosition,
+                        modalStatus.savedSound
+                          ? modalStatus.savedSound.name
+                          : ""
+                      );
                       setModalStatus({ ...modalStatus, isModalOpen: false });
                     }}
                   >
@@ -198,6 +299,7 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
+                    // TODO: 그냥 끄면, 처음 모달 열렸을 때 볼륨을 기억하고 있따가 reset하고 모달 꺼야 함
                     setModalStatus({ ...modalStatus, isModalOpen: false });
                   }}
                 >
@@ -215,13 +317,25 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
               Create Sound
             </button>
             <ModalInputForm
+              onChange={(e) => {
+                const additionalActionValue =
+                  e.currentTarget.additionalAction.value;
+                setAdditionalActionValue(additionalActionValue);
+                additionalActionValue === AdditionalAction.VOLUME_CHANGE
+                  ? changeVolumeChangeInfo("isVolumeChangeChecked", true)
+                  : changeVolumeChangeInfo("isVolumeChangeChecked", false);
+              }}
               onSubmit={(e) => {
                 e.preventDefault();
                 const { existingSound, additionalAction } = e.currentTarget;
 
                 onAdditionalEventSave(
                   existingSound.value,
-                  additionalAction.value
+                  additionalAction.value,
+                  {
+                    volume:
+                      audioAPITracks[existingSound.value].gainNode.gain.value,
+                  }
                 );
                 setModalStatus({ ...modalStatus, isModalOpen: false });
               }}
@@ -229,9 +343,13 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
               <Subtitle>Existing Sound</Subtitle>
               <AdditionalEventSelect
                 name="existingSound"
-                onChange={(e) =>
-                  console.log(e.currentTarget.value, "선택된 ref")
-                }
+                onChange={(e) => {
+                  e.stopPropagation();
+                  changeVolumeChangeInfo(
+                    "selectedExistingSound",
+                    e.currentTarget.value
+                  );
+                }}
               >
                 {soundRefList.map((soundName) => (
                   <option key={soundName} value={soundName}>
@@ -243,19 +361,57 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
               <Subtitle>Sound Action</Subtitle>
               <AdditionalEventRadioGroup>
                 <RadioLabel>
-                  Play <RadioInput value="play" />
+                  Play
+                  <RadioInput
+                    value={AdditionalAction.PLAY}
+                    checked={additionalActionValue === AdditionalAction.PLAY}
+                  />
                 </RadioLabel>
 
                 <RadioLabel>
-                  Stop <RadioInput value="stop" />
+                  Stop
+                  <RadioInput
+                    value={AdditionalAction.STOP}
+                    checked={additionalActionValue === AdditionalAction.STOP}
+                  />
+                </RadioLabel>
+
+                <RadioLabel>
+                  Volume Change
+                  <RadioInput
+                    value={AdditionalAction.VOLUME_CHANGE}
+                    checked={
+                      additionalActionValue === AdditionalAction.VOLUME_CHANGE
+                    }
+                  />
                 </RadioLabel>
               </AdditionalEventRadioGroup>
+
+              {volumeChangeInfo.isVolumeChangeChecked && (
+                <>
+                  <Subtitle>Volume Change</Subtitle>
+                  <StyledInputRange
+                    type="range"
+                    name="optionValue.volume"
+                    id="optionValue.volume"
+                    min="0"
+                    max="1"
+                    step="0.001"
+                    value={volume}
+                    onChange={(e) => {
+                      onVolumeChange(e);
+                    }}
+                  />
+                  <ChangeVolumeValue>{volume.toFixed(3)}</ChangeVolumeValue>
+                </>
+              )}
 
               {soundSrc && (
                 <div>
                   <Subtitle>Sound review & Set Volume </Subtitle>
                   <SoundReviewer
                     controls
+                    defaultValue={volume}
                     src={soundSrc}
                     onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
                   />
@@ -263,7 +419,18 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
               )}
 
               <ButtonContainer>
-                {/*<ModalButton type="submit" disabled={isSaveDisabled}>*/}
+                <ModalButton
+                  type="button"
+                  onClick={() => {
+                    onAudioDelete(
+                      modalStatus.modalOpenedGridPosition,
+                      modalStatus.savedSound ? modalStatus.savedSound.name : ""
+                    );
+                    setModalStatus({ ...modalStatus, isModalOpen: false });
+                  }}
+                >
+                  Delete
+                </ModalButton>
                 <ModalButton type="submit">Save</ModalButton>
                 <ModalButton
                   type="button"

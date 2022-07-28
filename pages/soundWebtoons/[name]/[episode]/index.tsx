@@ -3,7 +3,10 @@ import { mongoFindAudioInfoDocument } from "../../../../lib/mongo/mongoFindAudio
 import { mongoFindImageInfoDocument } from "../../../../lib/mongo/mongoFindImageInfoDocument";
 import { mongoFindAllSoundWebtoons } from "../../../../lib/mongo/mongoFindAllSoundWebtoons";
 import ImageLayer from "../../../../components/imageLayer/imageLayer.component";
-import { GridInfo } from "../../../../components/soundPart/soundLayer/soundLayer.component";
+import {
+  AdditionalAction,
+  GridInfo,
+} from "../../../../components/soundPart/soundLayer/soundLayer.component";
 import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
 import { GetStaticProps } from "next";
 import { SoundLayerForUsers } from "../../../../components/soundPart/soundLayerForUsers/soundLayerForUsers.component";
@@ -23,8 +26,8 @@ interface IAudioInfoDocument {
     gridPosition: GridInfo;
     title: string;
     fileName?: string;
-    volume?: number;
-    action?: string;
+    volume: number;
+    action?: AdditionalAction;
   }[];
 }
 

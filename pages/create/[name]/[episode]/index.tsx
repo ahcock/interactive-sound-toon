@@ -4,7 +4,9 @@ import { mongoFindImageInfoDocument } from "../../../../lib/mongo/mongoFindImage
 import { mongoFindAllSoundWebtoons } from "../../../../lib/mongo/mongoFindAllSoundWebtoons";
 import ImageLayer from "../../../../components/imageLayer/imageLayer.component";
 import {
+  AdditionalAction,
   GridInfo,
+  SoundInfoType,
   SoundLayer,
 } from "../../../../components/soundPart/soundLayer/soundLayer.component";
 import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
@@ -17,13 +19,14 @@ interface ITotalImageDimensionType {
 }
 
 interface AudioInfo {
-  src?: string;
   index: number;
   gridPosition: GridInfo;
   title: string;
+  volume: number;
+  src?: string;
   fileName?: string;
-  volume?: number;
-  action?: string;
+  action?: AdditionalAction;
+  type?: SoundInfoType;
 }
 
 interface IAudioInfoDocument {

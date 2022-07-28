@@ -1,9 +1,11 @@
 import styled from "styled-components";
 
 export const ModalBackground = styled.div`
+  position: fixed;
+  left: 0;
+  top: 0;
   width: 100%;
   height: 100%;
-  position: fixed;
   background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
@@ -39,6 +41,7 @@ export const SoundNameInput = styled.input`
 
 export const Subtitle = styled.h4`
   padding-top: 40px;
+  padding-bottom: 3%;
   color: rgb(108, 103, 129);
 `;
 
@@ -87,10 +90,6 @@ export const DeleteButtonContainer = styled.span`
   cursor: pointer;
 `;
 
-export const VolumeSlider = styled.input`
-  background-color: gainsboro;
-`;
-
 export const SoundReviewer = styled.audio`
   margin-top: 10px;
 `;
@@ -98,3 +97,29 @@ export const SoundReviewer = styled.audio`
 export const AdditionalEventSelect = styled.select`
   width: 100%;
 `;
+
+export const AdditionalEventRadioGroup = styled.div`
+  display: flex;
+  gap: 30px;
+  align-items: center;
+`;
+
+export const RadioInput = styled.input.attrs(() => ({
+  type: "radio",
+  name: "additionalAction",
+}))`
+  -webkit-appearance: radio;
+`;
+
+export const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const StyledInputRange = styled.input`
+  margin-right: 5%;
+  appearance: auto;
+`;
+
+export const ChangeVolumeValue = styled.span``;
