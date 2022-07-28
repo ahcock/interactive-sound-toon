@@ -103,7 +103,6 @@ interface ISoundGridDataForCreator {
   index: number;
   gridPosition: GridInfo;
   showGrid: boolean;
-  onGridClick: OnGridClick;
   soundInfo?: SoundInfo;
 }
 
@@ -131,6 +130,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   const audioAPITracks = useRef<AudioAPITracks>({});
   const playingAudioTracks = useRef<PlayingAudioTracks>({});
   const soundRefs = useRef<ISoundRefs>({});
+  const [isRegisteringSound, setIsRegisteringSound] = useState(true);
 
   useEffect(function initializeAudioContext() {
     const audioCtx = new AudioContext();
@@ -169,72 +169,99 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             index: soundGridInfo.length,
             gridPosition: { row: `${i} / ${i + 1}`, column: `${j} / ${j + 1}` },
             showGrid: true,
-            onGridClick: onGridClick,
           });
         }
       }
 
       if (!!audioInfoDocument && !!audioContext) {
-        (async () => {
-          for await (const {
-            index,
-            gridPosition,
-            title,
-            src,
-            volume,
-            fileName,
-            action,
-            type,
-          } of audioInfoDocument.audioInfo) {
-            if (src && !action) {
-              const file = await fetch(src)
-                .then((res) => res.blob())
-                .then((blob) => new File([blob], fileName ?? ""));
-
-              const audioBuffer = await fetch(src)
-                .then((res) => res.arrayBuffer())
-                .then((buffer) => audioContext?.decodeAudioData(buffer));
-
-              const gainNode = new GainNode(audioContext);
-
-              audioAPITracks.current[title] = {
-                audioBuffer: audioBuffer,
-                gainNode,
-              };
-
-              soundGridInfo[index] = {
-                gridPosition,
-                index,
-                showGrid: true,
-                onGridClick: onGridClick,
-                soundInfo: {
+        try {
+          (async () => {
+            const responses = await Promise.all(
+              audioInfoDocument.audioInfo.map(
+                ({
+                  index,
+                  gridPosition,
                   title,
-                  volume,
-                  fileName,
                   src,
-                  file,
-                  type,
-                  isSoundAlreadyUploaded: true,
-                },
-              };
-            } else if (!!action) {
-              soundGridInfo[index] = {
-                gridPosition,
-                index,
-                showGrid: true,
-                onGridClick: onGridClick,
-                soundInfo: {
-                  title,
                   volume,
                   fileName,
-                  isSoundAlreadyUploaded: true,
                   action,
                   type,
-                },
-              };
-            }
-          }
-        })();
+                }) => {
+                  if (!!src && !action) {
+                    return fetch(src)
+                      .then((res) => res.arrayBuffer())
+                      .then((buffer) => audioContext?.decodeAudioData(buffer))
+                      .then((audioBuffer) => ({
+                        audioBuffer,
+                        index,
+                        gridPosition,
+                        title,
+                        src,
+                        volume,
+                        fileName,
+                        type,
+                      }));
+                  } else if (!!action) {
+                    soundGridInfo[index] = {
+                      gridPosition,
+                      index,
+                      showGrid: true,
+                      soundInfo: {
+                        title,
+                        volume,
+                        fileName,
+                        isSoundAlreadyUploaded: true,
+                        action,
+                        type,
+                      },
+                    };
+                  }
+                }
+              )
+            );
+
+            responses.forEach((res) => {
+              if (res) {
+                const {
+                  audioBuffer,
+                  index,
+                  gridPosition,
+                  title,
+                  src,
+                  volume,
+                  fileName,
+                  type,
+                } = res;
+
+                const gainNode = new GainNode(audioContext);
+
+                audioAPITracks.current[title] = {
+                  audioBuffer: audioBuffer,
+                  gainNode,
+                };
+
+                soundGridInfo[index] = {
+                  gridPosition,
+                  index,
+                  showGrid: true,
+                  soundInfo: {
+                    title,
+                    volume,
+                    fileName,
+                    src,
+                    type,
+                    isSoundAlreadyUploaded: true,
+                  },
+                };
+              }
+            });
+
+            setIsRegisteringSound(false);
+          })();
+        } catch (err) {
+          console.log(err);
+        }
       }
       setSoundGridData(soundGridInfo);
     },
@@ -244,6 +271,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   useEffect(
     function setIntersectionObserver() {
       if (
+        !isRegisteringSound &&
         !!soundRefs &&
         !!soundRefs.current &&
         isAudioConsented &&
@@ -393,7 +421,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         index: soundModalStatus.clickedGridIndex,
         gridPosition: soundModalStatus.modalOpenedGridPosition,
         showGrid: true,
-        onGridClick: onGridClick,
         soundInfo: {
           title,
           volume,
@@ -437,7 +464,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         index: soundModalStatus.clickedGridIndex,
         gridPosition: gridPosition,
         showGrid: true,
-        onGridClick: onGridClick,
       };
 
       playingAudioTracks.current[soundName]?.stop();
@@ -451,7 +477,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             index: soundModalStatus.clickedGridIndex,
             gridPosition: gridPosition,
             showGrid: true,
-            onGridClick: onGridClick,
           };
         }
       });
@@ -476,7 +501,6 @@ const SoundLayer: FC<ISoundLayerProps> = ({
       index: soundModalStatus.clickedGridIndex,
       gridPosition: soundModalStatus.modalOpenedGridPosition,
       showGrid: true,
-      onGridClick: onGridClick,
       soundInfo: {
         type: SoundInfoType.ACTION,
         action,
@@ -617,10 +641,13 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   return (
     <SoundLayerSection height={height} width={width} show>
       {isConsentModalOpen && (
-        <ConsentModal audioPlayConsentHandler={audioPlayConsentHandler} />
+        <ConsentModal
+          audioPlayConsentHandler={audioPlayConsentHandler}
+          isRegisteringSound={isRegisteringSound}
+        />
       )}
       {soundGridData.map((data) => {
-        const { index, gridPosition, showGrid, onGridClick, soundInfo } = data;
+        const { index, gridPosition, showGrid, soundInfo } = data;
 
         return (
           <GridForSoundCreator
