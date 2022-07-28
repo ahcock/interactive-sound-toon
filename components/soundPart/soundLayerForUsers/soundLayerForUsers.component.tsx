@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import {
+  AdditionalAction,
   AudioAPITracks,
   AudioPlayConsentHandler,
   ISoundLayerProps,
@@ -23,7 +24,6 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   const router = useRouter();
 
   const audioAPITracks = useRef<AudioAPITracks>({});
-
   const soundRefs = useRef<ISoundRefs>({});
 
   useEffect(function initializeAudioContext() {
@@ -50,7 +50,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
         router.events.off("routeChangeStart", stopAllSound);
       };
     },
-    [router.asPath]
+    [router.asPath, router.events]
   );
 
   useEffect(
@@ -97,31 +97,47 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
               //TODO: https://bobbyhadz.com/blog/javascript-get-all-attributes-of-element 적용
               const soundName = entry.target.getAttribute("data-name") || "";
               const action = entry.target.getAttribute("data-action");
-              const volume = parseInt(
+              const volume = parseFloat(
                 entry.target.getAttribute("data-volume") || "1"
               );
 
               const amp = audioAPITracks.current[soundName].gainNode.gain;
+              const ampValue = parseFloat(amp.value.toFixed(3));
 
               if (
                 !isNull(action) &&
                 entry.isIntersecting &&
                 !!soundName &&
-                action === "stop" &&
+                action === AdditionalAction.STOP &&
                 amp.value >= volume // 한번 fade-out이 시작되어 원래 셋팅된 볼륨보다 작아지기 시작했을 때부터는, 또 다시 fade-out을 방지하기 위한 조건(안 그럼 볼륨이 내려가다가 스크롤이 지날 때 마다 다시 올라갔다 내려갔다 반복함)
               ) {
-                amp.setValueAtTime(volume, audioContext.currentTime);
-                amp.linearRampToValueAtTime(0, audioContext.currentTime + 2);
+                amp.setValueAtTime(ampValue, audioContext.currentTime);
+                amp.linearRampToValueAtTime(0, audioContext.currentTime + 4);
 
                 playingAudioTracks.current[soundName]?.stop(
-                  audioContext.currentTime + 2.1
+                  audioContext.currentTime + 4.1
                 );
 
                 // recover volume after fade-out for the next play
-                amp.setValueAtTime(volume, audioContext.currentTime + 2.1);
+                amp.setValueAtTime(ampValue, audioContext.currentTime + 4.1);
               }
 
-              if (entry.isIntersecting && !!soundName && action !== "stop") {
+              if (
+                entry.isIntersecting &&
+                !!soundName &&
+                action === AdditionalAction.VOLUME_CHANGE
+              ) {
+                amp.linearRampToValueAtTime(
+                  volume,
+                  audioContext.currentTime + 1
+                );
+              }
+
+              if (
+                action !== AdditionalAction.STOP &&
+                entry.isIntersecting &&
+                !!soundName
+              ) {
                 const { audioBuffer, gainNode } =
                   audioAPITracks.current[soundName];
 
@@ -133,6 +149,8 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
                   bufferSource
                     .connect(gainNode)
                     .connect(audioContext.destination);
+
+                  amp.setValueAtTime(volume, audioContext.currentTime);
 
                   bufferSource.start();
                   playingAudioTracks.current[soundName] = bufferSource;

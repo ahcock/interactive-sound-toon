@@ -38,7 +38,6 @@ const getStaticProps: GetStaticProps = async () => {
     },
   };
 };
-
 export default Create;
 export { getStaticProps };
 export type { IWebtoonCardInfo };

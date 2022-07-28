@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { SoundContainer, SoundLayerSection } from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
-import { SoundSaveModal } from "../../fileUploadModal/fileUploadModal.component";
+import { SoundSaveModal } from "../fileUploadModal/fileUploadModal.component";
 import {
   AudioInfo,
   IAudioInfoDocument,
@@ -15,34 +15,54 @@ type GridInfo = {
   row: string;
 };
 
-type SavedSound = { name: string; file?: File | null };
+type SavedSound = { name: string; volume: number; file?: File | null };
 
 type OnGridClick = (gridInfo: GridInfo, index: number) => void;
 
 type OnSavedSoundClick = (
   gridInfo: GridInfo,
   index: number,
+  soundInfo: SoundInfo,
   savedSound: SavedSound
 ) => void;
 
 type OnSoundSave = (
   title: string,
+  volume: number,
   file?: File,
-  volume?: number,
-  savedSound?: SavedSound
+  action?: AdditionalAction,
+  savedSound?: SavedSound,
+  type?: SoundInfoType
 ) => void;
 
-type OnSoundDelete = (gridPosition: GridInfo) => void;
+type OnAudioDelete = (gridPosition: GridInfo, soundName: string) => void;
 
-type OnAdditionalEventSave = (soundName: string, action: string) => void;
+enum AdditionalAction {
+  PLAY = "play",
+  STOP = "stop",
+  VOLUME_CHANGE = "volumeChange",
+}
+
+// normal: 사운드롤 재생하는 일반적인 타입, action: 사운드의 정지, 다시 재생, 가변적인 볼륨 변화를 수행할 수 있는 타입임을 나타냄
+enum SoundInfoType {
+  NORMAL = "normal",
+  ACTION = "action",
+}
+
+type OnAdditionalEventSave = (
+  soundName: string,
+  action: AdditionalAction,
+  optionValue?: { volume: number }
+) => void;
 
 type AudioPlayConsentHandler = (isAudioPlaybackConsented: boolean) => void;
 
 interface ISoundModalStatus {
   isModalOpen: boolean;
   modalOpenedGridPosition: GridInfo;
-  savedSound?: SavedSound;
   clickedGridIndex: number;
+  soundInfo?: SoundInfo;
+  savedSound?: SavedSound;
 }
 
 interface ISoundRefs {
@@ -69,12 +89,13 @@ interface ISoundLayerProps {
 }
 
 interface SoundInfo {
+  title: string;
+  volume: number;
+  type?: SoundInfoType;
   file?: File;
   src?: string;
-  title: string;
   fileName?: string;
-  volume?: number;
-  action?: string;
+  action?: AdditionalAction;
   isSoundAlreadyUploaded?: boolean;
 }
 
@@ -108,9 +129,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
 
   // Audio buffer 보관소
   const audioAPITracks = useRef<AudioAPITracks>({});
-
   const playingAudioTracks = useRef<PlayingAudioTracks>({});
-
   const soundRefs = useRef<ISoundRefs>({});
 
   useEffect(function initializeAudioContext() {
@@ -137,7 +156,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         router.events.off("routeChangeStart", stopAllSound);
       };
     },
-    [router.asPath]
+    [router.asPath, router.events]
   );
 
   useEffect(
@@ -165,6 +184,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
             volume,
             fileName,
             action,
+            type,
           } of audioInfoDocument.audioInfo) {
             if (src && !action) {
               const file = await fetch(src)
@@ -193,6 +213,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                   fileName,
                   src,
                   file,
+                  type,
                   isSoundAlreadyUploaded: true,
                 },
               };
@@ -208,6 +229,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                   fileName,
                   isSoundAlreadyUploaded: true,
                   action,
+                  type,
                 },
               };
             }
@@ -233,31 +255,47 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               //TODO: https://bobbyhadz.com/blog/javascript-get-all-attributes-of-element 적용
               const soundName = entry.target.getAttribute("data-name") || "";
               const action = entry.target.getAttribute("data-action");
-              const volume = parseInt(
+              const volume = parseFloat(
                 entry.target.getAttribute("data-volume") || "1"
               );
 
               const amp = audioAPITracks.current[soundName].gainNode.gain;
+              const ampValue = parseFloat(amp.value.toFixed(3));
 
               if (
                 !isNull(action) &&
                 entry.isIntersecting &&
                 !!soundName &&
-                action === "stop" &&
-                amp.value >= volume // 한번 fade-out이 시작되어 원래 셋팅된 볼륨보다 작아지기 시작했을 때부터는, 또 다시 fade-out을 방지하기 위한 조건(안 그럼 볼륨이 내려가다가 스크롤이 지날 때 마다 다시 올라갔다 내려갔다 반복함)
+                action === AdditionalAction.STOP
+                // && ampValue >= volume // 한번 fade-out이 시작되어 원래 셋팅된 볼륨보다 작아지기 시작했을 때부터는, 또 다시 fade-out을 방지하기 위한 조건(안 그럼 볼륨이 내려가다가 스크롤이 지날 때 마다 다시 올라갔다 내려갔다 반복함)
               ) {
-                amp.setValueAtTime(volume, audioContext.currentTime);
-                amp.linearRampToValueAtTime(0, audioContext.currentTime + 2);
+                amp.setValueAtTime(ampValue, audioContext.currentTime);
+                amp.linearRampToValueAtTime(0, audioContext.currentTime + 4);
 
                 playingAudioTracks.current[soundName]?.stop(
-                  audioContext.currentTime + 2.1
+                  audioContext.currentTime + 4.1
                 );
 
                 // recover volume after fade-out for the next play
-                amp.setValueAtTime(volume, audioContext.currentTime + 2.1);
+                amp.setValueAtTime(ampValue, audioContext.currentTime + 4.1);
               }
 
-              if (entry.isIntersecting && !!soundName) {
+              if (
+                entry.isIntersecting &&
+                !!soundName &&
+                action === AdditionalAction.VOLUME_CHANGE
+              ) {
+                amp.linearRampToValueAtTime(
+                  volume,
+                  audioContext.currentTime + 1
+                );
+              }
+
+              if (
+                action !== AdditionalAction.STOP &&
+                entry.isIntersecting &&
+                !!soundName
+              ) {
                 const { audioBuffer, gainNode } =
                   audioAPITracks.current[soundName];
 
@@ -269,6 +307,8 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                   bufferSource
                     .connect(gainNode)
                     .connect(audioContext.destination);
+
+                  amp.setValueAtTime(volume, audioContext.currentTime);
 
                   bufferSource.start();
                   playingAudioTracks.current[soundName] = bufferSource;
@@ -316,9 +356,11 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   const onSavedSoundClick: OnSavedSoundClick = (
     gridInfo,
     index,
+    soundInfo,
     savedSound
   ) => {
     setSoundModalStatus({
+      soundInfo,
       savedSound,
       isModalOpen: true,
       modalOpenedGridPosition: gridInfo,
@@ -326,7 +368,15 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     });
   };
 
-  const onSoundSave: OnSoundSave = async (title, file, volume) => {
+  const onSoundSave: OnSoundSave = async (
+    title,
+    volume,
+    file,
+    action,
+    _onAdditionalEventSave,
+    _,
+    type = SoundInfoType.NORMAL
+  ) => {
     if (!!file && !!audioContext) {
       // TODO: 이 createObjectURL로 만들어진 audioUrl은 필요없지 않을까?
       const audioUrl = URL.createObjectURL(file);
@@ -366,13 +416,21 @@ const SoundLayer: FC<ISoundLayerProps> = ({
     const clickedGridData = soundGridData[clickedGridIndex];
     if (!!soundGridData && clickedGridData.soundInfo) {
       clickedGridData.soundInfo.title = title;
+      clickedGridData.soundInfo.volume = volume;
+      clickedGridData.soundInfo.isSoundAlreadyUploaded = false;
+
+      if (action) {
+        clickedGridData.soundInfo.type = SoundInfoType.ACTION;
+        clickedGridData.soundInfo.action = action;
+      }
+
       const newSoundGridData = [...soundGridData];
       newSoundGridData[clickedGridIndex] = clickedGridData;
       setSoundGridData(newSoundGridData);
     }
   };
 
-  const onSoundDelete: OnSoundDelete = (gridPosition: GridInfo) => {
+  const onAudioDelete: OnAudioDelete = (gridPosition, soundName) => {
     if (!!soundGridData) {
       const newSoundGridData = [...soundGridData];
       newSoundGridData[soundModalStatus.clickedGridIndex] = {
@@ -381,24 +439,49 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         showGrid: true,
         onGridClick: onGridClick,
       };
+
+      playingAudioTracks.current[soundName]?.stop();
+
+      // 사운드와 연관된 additional-event들 삭제
+
+      soundGridData.forEach(({ soundInfo }, index) => {
+        const { title, action } = soundInfo || { title: "", action: "" };
+        if (!!action && title === soundName) {
+          newSoundGridData[index] = {
+            index: soundModalStatus.clickedGridIndex,
+            gridPosition: gridPosition,
+            showGrid: true,
+            onGridClick: onGridClick,
+          };
+        }
+      });
+
       setSoundGridData(newSoundGridData);
     }
   };
 
   const getSoundRefList = () => {
-    return Object.keys(soundRefs.current);
+    return Object.keys(soundRefs.current).filter(
+      (soundName) =>
+        !(soundName.endsWith("-stop") || soundName.endsWith("-volumeChange"))
+    );
   };
 
-  const onAdditionalEventSave: OnAdditionalEventSave = (soundName, action) => {
+  const onAdditionalEventSave: OnAdditionalEventSave = (
+    soundName,
+    action,
+    optionValue
+  ) => {
     const gridDataWithSound: ISoundGridDataForCreator = {
       index: soundModalStatus.clickedGridIndex,
       gridPosition: soundModalStatus.modalOpenedGridPosition,
       showGrid: true,
       onGridClick: onGridClick,
       soundInfo: {
+        type: SoundInfoType.ACTION,
         action,
         title: soundName,
-        volume: 1,
+        volume: (optionValue && optionValue.volume) || 1,
       },
     };
 
@@ -454,7 +537,14 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           const {
             index,
             gridPosition,
-            soundInfo: { file: audioFile, title, volume, action, fileName },
+            soundInfo: {
+              file: audioFile,
+              title,
+              volume,
+              action,
+              fileName,
+              type,
+            },
           } = data;
 
           if (!!action) {
@@ -465,6 +555,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
               volume,
               fileName,
               action,
+              type,
             });
           }
 
@@ -541,10 +632,15 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           >
             {!!soundInfo && (
               <SoundContainer
+                soundInfoType={soundInfo.type}
                 onClick={() => {
-                  onSavedSoundClick(gridPosition, index, {
-                    name: soundInfo?.title,
+                  onSavedSoundClick(gridPosition, index, soundInfo, {
+                    name: soundInfo.title,
                     file: soundInfo.file,
+                    volume: soundInfo.file
+                      ? soundInfo?.volume
+                      : audioAPITracks.current[soundInfo?.title].gainNode.gain
+                          .value,
                   });
                 }}
                 ref={refCallback}
@@ -552,7 +648,9 @@ const SoundLayer: FC<ISoundLayerProps> = ({
                 data-action={soundInfo.action}
                 data-volume={soundInfo.volume}
               >
-                {soundInfo.title}
+                {soundInfo.type === SoundInfoType.ACTION
+                  ? `${soundInfo.title} - ${soundInfo.action}`
+                  : soundInfo.title}
               </SoundContainer>
             )}
           </GridForSoundCreator>
@@ -563,9 +661,11 @@ const SoundLayer: FC<ISoundLayerProps> = ({
           setModalStatus={setSoundModalStatus}
           modalStatus={soundModalStatus}
           onSoundSave={onSoundSave}
-          onAudioDelete={onSoundDelete}
+          onAudioDelete={onAudioDelete}
           soundRefList={getSoundRefList()}
           onAdditionalEventSave={onAdditionalEventSave}
+          audioAPITracks={audioAPITracks.current}
+          audioContext={audioContext}
         />
       )}
       <button onClick={onSoundUpload}>업로드</button>
@@ -573,7 +673,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   );
 };
 
-export { SoundLayer };
+export { SoundLayer, AdditionalAction, SoundInfoType };
 export type {
   ISoundLayerProps,
   ISoundGridDataForCreator,
@@ -582,7 +682,7 @@ export type {
   ISoundModalStatus,
   GridInfo,
   SavedSound,
-  OnSoundDelete,
+  OnAudioDelete,
   ISoundRefs,
   OnAdditionalEventSave,
   SoundInfo,
