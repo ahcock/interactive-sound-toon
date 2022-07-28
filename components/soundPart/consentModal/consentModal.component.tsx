@@ -10,9 +10,13 @@ import { AudioPlayConsentHandler } from "../soundLayer/soundLayer.component";
 
 interface IConsentModalProps {
   audioPlayConsentHandler: AudioPlayConsentHandler;
+  isRegisteringSound: boolean;
 }
 
-const ConsentModal: FC<IConsentModalProps> = ({ audioPlayConsentHandler }) => {
+const ConsentModal: FC<IConsentModalProps> = ({
+  audioPlayConsentHandler,
+  isRegisteringSound,
+}) => {
   return (
     <ModalBackground>
       <ModalContainer>
@@ -21,8 +25,11 @@ const ConsentModal: FC<IConsentModalProps> = ({ audioPlayConsentHandler }) => {
           사운드를 재생하시겠습니까?
         </PlaybackConsentQuestion>
         <ConsentModalButtonContainer>
-          <JSButton onClick={() => audioPlayConsentHandler(true)}>
-            사운드 재생
+          <JSButton
+            onClick={() => audioPlayConsentHandler(true)}
+            disabled={isRegisteringSound}
+          >
+            {isRegisteringSound ? "사운드 로딩 중..." : "사운드 재생"}
           </JSButton>
           <JSButton onClick={() => audioPlayConsentHandler(false)}>
             사운드 없이 보기

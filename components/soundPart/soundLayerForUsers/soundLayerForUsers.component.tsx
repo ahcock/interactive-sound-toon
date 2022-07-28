@@ -22,9 +22,9 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   const [isAudioConsented, setIsAudioConsented] = useState(false);
   const playingAudioTracks = useRef<PlayingAudioTracks>({});
   const router = useRouter();
-
   const audioAPITracks = useRef<AudioAPITracks>({});
   const soundRefs = useRef<ISoundRefs>({});
+  const [isRegisteringSound, setIsRegisteringSound] = useState(true);
 
   useEffect(function initializeAudioContext() {
     const audioCtx = new AudioContext();
@@ -54,28 +54,35 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   );
 
   useEffect(
-    function registerSoundGrid() {
+    function registerSound() {
       if (!!audioInfoDocument && !!audioContext) {
         (async () => {
-          for await (const {
-            title,
-            src,
-            volume,
-            fileName,
-            action,
-          } of audioInfoDocument.audioInfo) {
-            if (!!src && !action) {
-              const audioBuffer = await fetch(src)
-                .then((res) => res.arrayBuffer())
-                .then((buffer) => audioContext?.decodeAudioData(buffer));
+          try {
+            const responses = await Promise.all(
+              audioInfoDocument.audioInfo.map(({ title, src, action }) => {
+                if (!!src && !action) {
+                  return fetch(src)
+                    .then((res) => res.arrayBuffer())
+                    .then((buffer) => audioContext?.decodeAudioData(buffer))
+                    .then((audioBuffer) => ({ audioBuffer, title }));
+                }
+              })
+            );
 
-              const gainNode = new GainNode(audioContext);
+            responses.forEach((res) => {
+              if (res) {
+                const { audioBuffer, title } = res;
+                const gainNode = new GainNode(audioContext);
+                audioAPITracks.current[title] = {
+                  audioBuffer,
+                  gainNode,
+                };
+              }
+            });
 
-              audioAPITracks.current[title] = {
-                audioBuffer: audioBuffer,
-                gainNode,
-              };
-            }
+            setIsRegisteringSound(false);
+          } catch (err) {
+            console.log("sound load failed");
           }
         })();
       }
@@ -86,6 +93,7 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   useEffect(
     function setIntersectionObserver() {
       if (
+        !isRegisteringSound &&
         !!soundRefs &&
         !!soundRefs.current &&
         isAudioConsented &&
@@ -206,10 +214,13 @@ const SoundLayerForUsers: FC<ISoundLayerProps> = ({
   return (
     <SoundLayerSection height={height} width={width}>
       {isConsentModalOpen && (
-        <ConsentModal audioPlayConsentHandler={audioPlayConsentHandler} />
+        <ConsentModal
+          audioPlayConsentHandler={audioPlayConsentHandler}
+          isRegisteringSound={isRegisteringSound}
+        />
       )}
       {audioInfoDocument.audioInfo.map((data) => {
-        const { index, gridPosition, title, action, volume, src } = data;
+        const { gridPosition, title, action, volume } = data;
 
         return (
           <SoundGridItem

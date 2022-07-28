@@ -13,6 +13,10 @@ export const StyledButton = styled.button<{ small: boolean }>`
     background-color: var(--blue700);
   }
 
+  &:disabled {
+    background-color: var(--grey400);
+  }
+
   @media screen and (min-width: 540px) and (max-width: 639px) {
     padding: 14px 18px;
     font-size: 15px;
