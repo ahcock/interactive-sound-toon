@@ -8,7 +8,7 @@ import {
   GridInfo,
 } from "../../../../components/soundPart/soundLayer/soundLayer.component";
 import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
-import { GetStaticProps } from "next";
+import { GetServerSideProps, GetStaticProps } from "next";
 import { SoundLayerForUsers } from "../../../../components/soundPart/soundLayerForUsers/soundLayerForUsers.component";
 import { debounce } from "lodash";
 
@@ -112,17 +112,34 @@ const SoundWebtoon: FC<ISoundWebtoonProps> = ({
   );
 };
 
-const getStaticPaths = async () => {
-  const allDocuments = await mongoFindAllSoundWebtoons();
+// const getStaticPaths = async () => {
+//   const allDocuments = await mongoFindAllSoundWebtoons();
+//
+//   const paths = allDocuments.map((webtoon: IAudioInfoDocument) => ({
+//     params: { name: webtoon.webtoonName, episode: webtoon.episode },
+//   }));
+//
+//   return { paths, fallback: false };
+// };
+//
+// const getStaticProps: GetStaticProps = async ({ params }) => {
+//   const webtoonName = typeof params?.name === "string" ? params.name : "";
+//   const episode = typeof params?.episode === "string" ? params.episode : "";
+//
+//   const [audioInfoDocument, imageInfoDocument] = await Promise.all([
+//     mongoFindAudioInfoDocument(webtoonName, episode),
+//     mongoFindImageInfoDocument(webtoonName, episode),
+//   ]);
+//
+//   return {
+//     props: {
+//       audioInfoDocument,
+//       imageInfoDocument,
+//     },
+//   };
+// };
 
-  const paths = allDocuments.map((webtoon: IAudioInfoDocument) => ({
-    params: { name: webtoon.webtoonName, episode: webtoon.episode },
-  }));
-
-  return { paths, fallback: false };
-};
-
-const getStaticProps: GetStaticProps = async ({ params }) => {
+const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const webtoonName = typeof params?.name === "string" ? params.name : "";
   const episode = typeof params?.episode === "string" ? params.episode : "";
 
@@ -140,7 +157,7 @@ const getStaticProps: GetStaticProps = async ({ params }) => {
 };
 
 export default SoundWebtoon;
-export { getStaticPaths, getStaticProps };
+export { getServerSideProps };
 export type {
   ITotalImageDimensionType,
   IAudioInfoDocument,
