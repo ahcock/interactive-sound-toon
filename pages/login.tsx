@@ -2,6 +2,7 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import {
   ButtonContainer,
   InputContainer,
+  LoginGuide,
   LoginPageContainer,
   LoginPageMain,
   LoginPageTitle,
@@ -72,6 +73,11 @@ const Login = () => {
             <JSButton type="submit">로그인</JSButton>
           </ButtonContainer>
         </form>
+
+        <LoginGuide>
+          &#10024; 앱의 로그인 상태기반 페이지별 접근권한 시연을 위함으로서 평소
+          사용하시는 이메일을 입력하시어 로그인 하시면 됩니다.
+        </LoginGuide>
       </LoginPageMain>
     </LoginPageContainer>
   );

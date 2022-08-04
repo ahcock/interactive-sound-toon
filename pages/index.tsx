@@ -5,6 +5,7 @@ import sampleImage0 from "/public/images/index_sample_0.jpeg";
 import sampleImage1 from "/public/images/index_sample_1.jpeg";
 import {
   BackgroundGradient,
+  IndexAnchor,
   IndexPageContainer,
   IndexPageImageContainer,
   IndexPageSection,
@@ -12,8 +13,21 @@ import {
   IndexTextSection,
   IndexTitle,
 } from "../styles/pageComponentStyles/indexPage.styles";
+import { useEffect, useRef, useState } from "react";
 
 const Home: NextPage = () => {
+  const [isLinkIntersecting, setIsLinkIntersecting] = useState(false);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(function initIntersectionObserver() {
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      setIsLinkIntersecting(entry.isIntersecting);
+    });
+
+    if (linkRef.current) observer.observe(linkRef.current);
+  }, []);
+
   return (
     <IndexPageContainer>
       <IndexPageSection>
@@ -39,7 +53,7 @@ const Home: NextPage = () => {
         <IndexTextSection>
           <IndexSubtitle fontSize="2rem">만약에 이런 웹툰에서</IndexSubtitle>
           <IndexSubtitle fontSize="2rem">
-            이런 소리가 날 수 있다면
+            상상을 더할 소리가 날 수 있다면
           </IndexSubtitle>
         </IndexTextSection>
       </IndexPageSection>
@@ -49,10 +63,11 @@ const Home: NextPage = () => {
         <Image alt="두번째 샘플 이미지" src={sampleImage1} priority />
       </IndexPageSection>
 
-      {/*인터섹션 옵져버*/}
       <IndexPageSection>
-        <Link href="/soundWebtoons">
-          <a>사운드 웹툰 보러 가기</a>
+        <Link href="/soundWebtoons" passHref>
+          <IndexAnchor isIntersecting={isLinkIntersecting} ref={linkRef}>
+            사운드 웹툰 보러 가기
+          </IndexAnchor>
         </Link>
       </IndexPageSection>
     </IndexPageContainer>

@@ -1,4 +1,15 @@
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
+
+const slideUp = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 
 export const IndexPageContainer = styled.main`
   position: absolute;
@@ -22,7 +33,6 @@ export const IndexPageSection = styled.section`
 export const IndexPageImageContainer = styled.div`
   position: relative;
   width: 100%;
-  //border-bottom: 8px solid #222;
   color: var(--white);
   height: 471px;
   display: flex;
@@ -101,5 +111,24 @@ export const IndexSubtitle = styled.h2<{ fontSize?: string }>`
 
   @media screen and (min-width: 550px) {
     font-size: ${({ fontSize }) => fontSize || "1.6rem"};
+  }
+`;
+
+export const IndexAnchor = styled.a<{ isIntersecting: boolean }>`
+  font-size: 1.5vw;
+  font-weight: 600;
+  padding: 1em;
+  cursor: pointer;
+  border-radius: 5px;
+  opacity: 0;
+
+  ${({ isIntersecting }) =>
+    isIntersecting &&
+    css`
+      animation: ${slideUp} 1.2s ease 0s 1 normal forwards;
+    `}
+
+  &:hover {
+    background-color: var(--grey200);
   }
 `;
