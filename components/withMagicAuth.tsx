@@ -43,6 +43,8 @@ const WithMagicAuth: FC<IWithMagicAuth> = ({
         if (!magicClient) {
           return;
         }
+
+        // TODO: 여기서 너무 느려지는 것 같음
         const isLoggedIn = await magicClient.user.isLoggedIn();
 
         if (isLoggedIn && !isUserLoggedIn) {

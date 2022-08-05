@@ -48,3 +48,7 @@ export const InputContainer = styled.div`
 export const ButtonContainer = styled.div`
   margin-top: 3rem;
 `;
+
+export const LoginGuide = styled.p`
+  margin-top: 4%;
+`;
