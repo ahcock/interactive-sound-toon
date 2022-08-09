@@ -1,5 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { SoundContainer, SoundLayerSection } from "./soundLayer.styles";
+import {
+  SoundContainer,
+  SoundLayerSection,
+  UploadButtonContainer,
+} from "./soundLayer.styles";
 import { GridForSoundCreator } from "../soundGridForCreator/soundGridForCreator.component";
 import { SoundSaveModal } from "../fileUploadModal/fileUploadModal.component";
 import {
@@ -9,6 +13,8 @@ import {
 import { ConsentModal } from "../consentModal/consentModal.component";
 import { useRouter } from "next/router";
 import { isNull } from "lodash";
+import { JSButton } from "../../reusable/JSButton/JSButton.component";
+import { UploadLoader } from "../../uploadLoader/uploadLoader.component";
 
 type GridInfo = {
   column: string;
@@ -131,6 +137,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   const playingAudioTracks = useRef<PlayingAudioTracks>({});
   const soundRefs = useRef<ISoundRefs>({});
   const [isRegisteringSound, setIsRegisteringSound] = useState(true);
+  const [isSoundUploading, setIsSoundUploading] = useState(false);
 
   useEffect(function initializeAudioContext() {
     const audioCtx = new AudioContext();
@@ -517,6 +524,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   };
 
   const onSoundUpload = async () => {
+    setIsSoundUploading(true);
     const savedSound = soundGridData.filter((gridData) => gridData.soundInfo);
 
     const { unUploadedSound, alreadyUploadedSound } = savedSound.reduce<{
@@ -625,6 +633,7 @@ const SoundLayer: FC<ISoundLayerProps> = ({
         body: JSON.stringify(dataForUploading),
       });
     }
+    setIsSoundUploading(false);
   };
 
   const audioPlayConsentHandler: AudioPlayConsentHandler = (
@@ -639,64 +648,71 @@ const SoundLayer: FC<ISoundLayerProps> = ({
   };
 
   return (
-    <SoundLayerSection height={height} width={width} show>
-      {isConsentModalOpen && (
-        <ConsentModal
-          audioPlayConsentHandler={audioPlayConsentHandler}
-          isRegisteringSound={isRegisteringSound}
-        />
-      )}
-      {soundGridData.map((data) => {
-        const { index, gridPosition, showGrid, soundInfo } = data;
+    <>
+      <SoundLayerSection height={height} width={width} show>
+        {isConsentModalOpen && (
+          <ConsentModal
+            audioPlayConsentHandler={audioPlayConsentHandler}
+            isRegisteringSound={isRegisteringSound}
+          />
+        )}
+        {soundGridData.map((data) => {
+          const { index, gridPosition, showGrid, soundInfo } = data;
 
-        return (
-          <GridForSoundCreator
-            index={index}
-            key={gridPosition.row + gridPosition.column}
-            gridPosition={gridPosition}
-            showGrid={showGrid}
-            onGridClick={onGridClick}
-          >
-            {!!soundInfo && (
-              <SoundContainer
-                soundInfoType={soundInfo.type}
-                onClick={() => {
-                  onSavedSoundClick(gridPosition, index, soundInfo, {
-                    name: soundInfo.title,
-                    file: soundInfo.file,
-                    volume: soundInfo.file
-                      ? soundInfo?.volume
-                      : audioAPITracks.current[soundInfo?.title].gainNode.gain
-                          .value,
-                  });
-                }}
-                ref={refCallback}
-                data-name={soundInfo.title}
-                data-action={soundInfo.action}
-                data-volume={soundInfo.volume}
-              >
-                {soundInfo.type === SoundInfoType.ACTION
-                  ? `${soundInfo.title} - ${soundInfo.action}`
-                  : soundInfo.title}
-              </SoundContainer>
-            )}
-          </GridForSoundCreator>
-        );
-      })}
-      {soundModalStatus.isModalOpen && (
-        <SoundSaveModal
-          setModalStatus={setSoundModalStatus}
-          modalStatus={soundModalStatus}
-          onSoundSave={onSoundSave}
-          onAudioDelete={onAudioDelete}
-          soundRefList={getSoundRefList()}
-          onAdditionalEventSave={onAdditionalEventSave}
-          audioAPITracks={audioAPITracks.current}
-          audioContext={audioContext}
-        />
-      )}
-      <button onClick={onSoundUpload}>업로드</button>
-    </SoundLayerSection>
+          return (
+            <GridForSoundCreator
+              index={index}
+              key={gridPosition.row + gridPosition.column}
+              gridPosition={gridPosition}
+              showGrid={showGrid}
+              onGridClick={onGridClick}
+            >
+              {!!soundInfo && (
+                <SoundContainer
+                  soundInfoType={soundInfo.type}
+                  onClick={() => {
+                    onSavedSoundClick(gridPosition, index, soundInfo, {
+                      name: soundInfo.title,
+                      file: soundInfo.file,
+                      volume: soundInfo.file
+                        ? soundInfo?.volume
+                        : audioAPITracks.current[soundInfo?.title].gainNode.gain
+                            .value,
+                    });
+                  }}
+                  ref={refCallback}
+                  data-name={soundInfo.title}
+                  data-action={soundInfo.action}
+                  data-volume={soundInfo.volume}
+                >
+                  {soundInfo.type === SoundInfoType.ACTION
+                    ? `${soundInfo.title} - ${soundInfo.action}`
+                    : soundInfo.title}
+                </SoundContainer>
+              )}
+            </GridForSoundCreator>
+          );
+        })}
+        {soundModalStatus.isModalOpen && (
+          <SoundSaveModal
+            setModalStatus={setSoundModalStatus}
+            modalStatus={soundModalStatus}
+            onSoundSave={onSoundSave}
+            onAudioDelete={onAudioDelete}
+            soundRefList={getSoundRefList()}
+            onAdditionalEventSave={onAdditionalEventSave}
+            audioAPITracks={audioAPITracks.current}
+            audioContext={audioContext}
+          />
+        )}
+      </SoundLayerSection>
+
+      <UploadButtonContainer>
+        <JSButton onClick={onSoundUpload}>오디오 정보 저장</JSButton>
+      </UploadButtonContainer>
+
+      {isSoundUploading && <UploadLoader />}
+    </>
   );
 };
 

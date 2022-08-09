@@ -15,14 +15,6 @@ export const SoundLayerSection = styled.section<{
   grid-template-rows: repeat(200, 1fr);
 `;
 
-export const StickyAudioPlayerContainer = styled.article`
-  position: sticky;
-  bottom: 0;
-  left: 50%;
-  width: max-content;
-  height: 100px;
-`;
-
 export const SoundContainer = styled.div<{ soundInfoType?: SoundInfoType }>`
   width: 80px;
   height: 80px;
@@ -34,4 +26,12 @@ export const SoundContainer = styled.div<{ soundInfoType?: SoundInfoType }>`
   justify-content: center;
   align-items: center;
   cursor: pointer;
+`;
+
+export const UploadButtonContainer = styled.div`
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding-bottom: 2em;
+  padding-right: 2em;
 `;
