@@ -16,16 +16,19 @@ export const SoundLayerSection = styled.section<{
 `;
 
 export const SoundContainer = styled.div<{ soundInfoType?: SoundInfoType }>`
-  width: 80px;
-  height: 80px;
+  width: 10vw;
+  height: 10vh;
   border-radius: 20px;
   background-color: ${({ soundInfoType }) =>
     soundInfoType === SoundInfoType.ACTION ? "red" : "aliceblue"};
-  font-size: 20px;
+  font-size: 2vh;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const UploadButtonContainer = styled.div`
