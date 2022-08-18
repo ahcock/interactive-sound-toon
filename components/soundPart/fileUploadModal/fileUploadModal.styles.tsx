@@ -28,6 +28,16 @@ export const ModalTitle = styled.h3`
   font-size: 2em;
 `;
 
+export const ModalTitleContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+`;
+
+export const ModalChangeButton = styled.button`
+  height: 50%;
+`;
+
 export const ModalInputForm = styled.form``;
 
 export const SoundNameInput = styled.input`

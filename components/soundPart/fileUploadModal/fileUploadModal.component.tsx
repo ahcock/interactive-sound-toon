@@ -17,8 +17,10 @@ import {
   ModalBackground,
   ModalBody,
   ModalButton,
+  ModalChangeButton,
   ModalInputForm,
   ModalTitle,
+  ModalTitleContainer,
   RadioInput,
   RadioLabel,
   SoundNameInput,
@@ -220,12 +222,18 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
       <ModalBody onClick={(e) => e.stopPropagation()}>
         {!isForAdditionalEvent ? (
           <>
-            <ModalTitle>{soundSrc ? "Edit Sound" : "Create Sound"}</ModalTitle>
-            <button
-              onClick={() => setIsForAdditionalEvent(!isForAdditionalEvent)}
-            >
-              Additional Event
-            </button>
+            <ModalTitleContainer>
+              <ModalTitle>
+                {soundSrc ? "Edit Sound" : "Create Sound"}
+              </ModalTitle>
+              <ModalChangeButton
+                type="button"
+                onClick={() => setIsForAdditionalEvent(!isForAdditionalEvent)}
+              >
+                Additional Event
+              </ModalChangeButton>
+            </ModalTitleContainer>
+
             <ModalInputForm onSubmit={onSaveHandler}>
               <Subtitle>Sound Name</Subtitle>
               <SoundNameInput
@@ -312,12 +320,15 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
           </>
         ) : (
           <>
-            <ModalTitle>Additional Event</ModalTitle>
-            <button
-              onClick={() => setIsForAdditionalEvent(!isForAdditionalEvent)}
-            >
-              Create Sound
-            </button>
+            <ModalTitleContainer>
+              <ModalTitle>Additional Event</ModalTitle>
+              <ModalChangeButton
+                onClick={() => setIsForAdditionalEvent(!isForAdditionalEvent)}
+              >
+                Create Sound
+              </ModalChangeButton>
+            </ModalTitleContainer>
+
             <ModalInputForm
               onChange={(e) => {
                 const additionalActionValue =
