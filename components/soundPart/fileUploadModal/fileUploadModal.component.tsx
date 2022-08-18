@@ -135,6 +135,7 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
       if (type === SoundInfoType.ACTION) {
         setIsForAdditionalEvent(true);
         setAdditionalActionValue(action);
+        changeVolumeChangeInfo("selectedExistingSound", title);
       }
 
       if (!!file) {
@@ -213,6 +214,7 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
   const onVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     setVolume(parseFloat(e.currentTarget.value));
+    if (isSaveDisabled) setIsSaveDisabled(false);
   };
 
   return (
@@ -353,6 +355,7 @@ const SoundSaveModal: FC<ISoundSaveModalProps> = ({
             >
               <Subtitle>Existing Sound</Subtitle>
               <AdditionalEventSelect
+                defaultValue={volumeChangeInfo.selectedExistingSound}
                 name="existingSound"
                 onChange={(e) => {
                   e.stopPropagation();
