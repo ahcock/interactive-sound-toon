@@ -1,11 +1,9 @@
 import type { NextPage } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import sampleImage0 from "/public/images/index_sample_0.jpeg";
 import sampleImage1 from "/public/images/index_sample_1.jpeg";
 import {
   BackgroundGradient,
-  IndexAnchor,
   IndexPageContainer,
   IndexPageImageContainer,
   IndexPageSection,
@@ -14,6 +12,7 @@ import {
   IndexTitle,
 } from "../styles/pageComponentStyles/indexPage.styles";
 import { useEffect, useRef, useState } from "react";
+import { JSSlideUpLink } from "../components/reusable/JSSlideUpLink/JSSlideUpLink.component";
 
 const Home: NextPage = () => {
   const [isLinkIntersecting, setIsLinkIntersecting] = useState(false);
@@ -64,11 +63,13 @@ const Home: NextPage = () => {
       </IndexPageSection>
 
       <IndexPageSection>
-        <Link href="/soundWebtoons" passHref>
-          <IndexAnchor isIntersecting={isLinkIntersecting} ref={linkRef}>
-            사운드 웹툰 보러 가기
-          </IndexAnchor>
-        </Link>
+        <JSSlideUpLink
+          href="/soundWebtoons"
+          isIntersecting={isLinkIntersecting}
+          ref={linkRef}
+        >
+          사운드 웹툰 보러 가기
+        </JSSlideUpLink>
       </IndexPageSection>
     </IndexPageContainer>
   );

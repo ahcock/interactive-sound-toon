@@ -1,16 +1,17 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { mongoFindAudioInfoDocument } from "../../../../lib/mongo/mongoFindAudioInfoDocument";
 import { mongoFindImageInfoDocument } from "../../../../lib/mongo/mongoFindImageInfoDocument";
-import { mongoFindAllSoundWebtoons } from "../../../../lib/mongo/mongoFindAllSoundWebtoons";
-import ImageLayer from "../../../../components/imageLayer/imageLayer.component";
+import { ImageLayer } from "../../../../components/imageLayer/imageLayer.component";
 import {
   AdditionalAction,
   GridInfo,
 } from "../../../../components/soundPart/soundLayer/soundLayer.component";
 import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
-import { GetServerSideProps, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { SoundLayerForUsers } from "../../../../components/soundPart/soundLayerForUsers/soundLayerForUsers.component";
 import { debounce } from "lodash";
+import { ImagerLayerLinkContainer } from "../../../../components/imageLayer/imageLayer.styles";
+import { JSSlideUpLink } from "../../../../components/reusable/JSSlideUpLink/JSSlideUpLink.component";
 
 interface ITotalImageDimensionType {
   width: number;
@@ -42,7 +43,7 @@ interface ISoundWebtoonProps {
   imageInfoDocument: IImageInfoDocument;
 }
 
-// TODO: 사운드 웹툰 페이지, Create 인덱스 페이지 합치기
+// TODO: 사운드 웹툰 페이지, Create 인덱스 페이지 코드 합치기. 비슷한 구조로 인해 코드를 합치는 방법을 모색해 봐야 할 듯.
 
 const SoundWebtoon: FC<ISoundWebtoonProps> = ({
   audioInfoDocument,
@@ -50,8 +51,19 @@ const SoundWebtoon: FC<ISoundWebtoonProps> = ({
 }) => {
   const [imageLayerDimension, setImageLayerDimension] =
     useState<ITotalImageDimensionType>({ width: 0, height: 0 });
+  const [isLinkIntersecting, setIsLinkIntersecting] = useState(false);
 
+  const linkRef = useRef<HTMLAnchorElement>(null);
   const imagesContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(function initIntersectionObserver() {
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      setIsLinkIntersecting(entry.isIntersecting);
+    });
+
+    if (linkRef.current) observer.observe(linkRef.current);
+  }, []);
 
   const resizeObserverCallback = (entries: ResizeObserverEntry[]) => {
     entries.forEach((entry) => {
@@ -108,36 +120,19 @@ const SoundWebtoon: FC<ISoundWebtoonProps> = ({
         imageLayerDimension={imageLayerDimension}
         audioInfoDocument={audioInfoDocument}
       />
+      <ImagerLayerLinkContainer>
+        <JSSlideUpLink
+          href="/create/jojo/1"
+          passHref
+          ref={linkRef}
+          isIntersecting={isLinkIntersecting}
+        >
+          사운드가 어떻게 디자인 되어있는지 보러 가기
+        </JSSlideUpLink>
+      </ImagerLayerLinkContainer>
     </PageContainer>
   );
 };
-
-// const getStaticPaths = async () => {
-//   const allDocuments = await mongoFindAllSoundWebtoons();
-//
-//   const paths = allDocuments.map((webtoon: IAudioInfoDocument) => ({
-//     params: { name: webtoon.webtoonName, episode: webtoon.episode },
-//   }));
-//
-//   return { paths, fallback: false };
-// };
-//
-// const getStaticProps: GetStaticProps = async ({ params }) => {
-//   const webtoonName = typeof params?.name === "string" ? params.name : "";
-//   const episode = typeof params?.episode === "string" ? params.episode : "";
-//
-//   const [audioInfoDocument, imageInfoDocument] = await Promise.all([
-//     mongoFindAudioInfoDocument(webtoonName, episode),
-//     mongoFindImageInfoDocument(webtoonName, episode),
-//   ]);
-//
-//   return {
-//     props: {
-//       audioInfoDocument,
-//       imageInfoDocument,
-//     },
-//   };
-// };
 
 const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const webtoonName = typeof params?.name === "string" ? params.name : "";

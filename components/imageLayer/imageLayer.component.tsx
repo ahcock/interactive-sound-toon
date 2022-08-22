@@ -26,4 +26,4 @@ const ImageLayer = forwardRef<HTMLDivElement, ImageLayerProps>(
 );
 
 ImageLayer.displayName = "ImageLayer";
-export default ImageLayer;
+export { ImageLayer };

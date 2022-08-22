@@ -1,8 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { mongoFindAudioInfoDocument } from "../../../../lib/mongo/mongoFindAudioInfoDocument";
 import { mongoFindImageInfoDocument } from "../../../../lib/mongo/mongoFindImageInfoDocument";
-import { mongoFindAllSoundWebtoons } from "../../../../lib/mongo/mongoFindAllSoundWebtoons";
-import ImageLayer from "../../../../components/imageLayer/imageLayer.component";
+import { ImageLayer } from "../../../../components/imageLayer/imageLayer.component";
 import {
   AdditionalAction,
   GridInfo,
@@ -10,7 +9,7 @@ import {
   SoundLayer,
 } from "../../../../components/soundPart/soundLayer/soundLayer.component";
 import { PageContainer } from "../../../../styles/pageComponentStyles/soundWebtoonPage.styles";
-import { GetServerSideProps, GetStaticProps } from "next";
+import { GetServerSideProps } from "next";
 import { debounce } from "lodash";
 
 interface ITotalImageDimensionType {
@@ -115,34 +114,6 @@ const SoundWebtoon: FC<ISoundWebtoonProps> = ({
     </PageContainer>
   );
 };
-
-// const getStaticPaths = async () => {
-//   const allDocuments = await mongoFindAllSoundWebtoons();
-//
-//   const paths = allDocuments.map((webtoon: IAudioInfoDocument) => ({
-//     params: { name: webtoon.webtoonName, episode: webtoon.episode },
-//   }));
-//
-//   return { paths, fallback: false };
-// };
-//
-// const getStaticProps: GetStaticProps = async ({ params }) => {
-//   const webtoonName = typeof params?.name === "string" ? params.name : "";
-//   const episode = typeof params?.episode === "string" ? params.episode : "";
-//
-//   const [audioInfoDocument, imageInfoDocument] = await Promise.all([
-//     mongoFindAudioInfoDocument(webtoonName, episode),
-//     mongoFindImageInfoDocument(webtoonName, episode),
-//   ]);
-//
-//   return {
-//     props: {
-//       audioInfoDocument,
-//       imageInfoDocument,
-//       isPagePrivate: true,
-//     },
-//   };
-// };
 
 const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const webtoonName = typeof params?.name === "string" ? params.name : "";
