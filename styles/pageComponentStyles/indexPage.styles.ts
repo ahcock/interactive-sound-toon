@@ -109,6 +109,10 @@ export const IndexSubtitle = styled.h2<{ fontSize?: string }>`
   font-size: ${({ fontSize }) => fontSize || "1.1rem"};
   font-weight: 650;
 
+  @media screen and (max-width: 549px) {
+    font-size: 1.15rem;
+  }
+
   @media screen and (min-width: 550px) {
     font-size: ${({ fontSize }) => fontSize || "1.6rem"};
   }
