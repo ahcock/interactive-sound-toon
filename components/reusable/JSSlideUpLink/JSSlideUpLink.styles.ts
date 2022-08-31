@@ -12,7 +12,7 @@ const slideUp = keyframes`
 `;
 
 export const StyledAnchor = styled.a<{ isIntersecting?: boolean }>`
-  font-size: 1.5vw;
+  font-size: max(1.5vw, 1.4rem);
   font-weight: 600;
   padding: 1em;
   cursor: pointer;
