@@ -13,7 +13,8 @@ const ImageLayer = forwardRef<HTMLDivElement, ImageLayerProps>(
       <ImageLayerSection ref={ref}>
         {imageSources.map((src, index) => (
           <Image
-            key={index}
+            priority
+            key={src + index}
             src={src}
             width={690}
             height={1600}
